@@ -3,7 +3,7 @@
 // MIT License
 
 // ---- global settings ----
-$fn = $preview ? 128 : 64;
+$fn = $preview ? 64 : 128;
 zFite = $preview ? 0.05 : 0.0; // small height to avoid visual z-fighting on preview
 
 // ---- user settings ----
