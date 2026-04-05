@@ -1,3 +1,7 @@
+// simple bayonet cylindrical locking mechanism
+// Cameron K. Brooks
+// MIT License
+
 // ---- global settings ----
 $fn = $preview ? 128 : 64;
 zFite = $preview ? 0.05 : 0.0; // small height to avoid visual z-fighting on preview
