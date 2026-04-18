@@ -34,7 +34,16 @@ bayonet_neck(neck_height, inner_radius, outer_radius)
   );
 ```
 
-See `example_usage.scad` for a complete working example with `manual_pin_radius` auto-fallback.
+See the [`examples/`](examples/) directory for ready-to-render configurations:
+
+| File                                                              | What it shows                                    |
+| ----------------------------------------------------------------- | ------------------------------------------------ |
+| [`outer_3pin_with_neck.scad`](examples/outer_3pin_with_neck.scad) | Default: outer pin, 3 pins, CW, neck on pin half |
+| [`inner_2pin_no_neck.scad`](examples/inner_2pin_no_neck.scad)     | Inner pin, 2 pins, CCW, no neck                  |
+| [`outer_4pin_ccw.scad`](examples/outer_4pin_ccw.scad)             | Outer pin, 4 pins, CCW, larger bore              |
+| [`minimal.scad`](examples/minimal.scad)                           | Bare minimum call, no neck, no derived variables |
+
+Each file renders both the lock and pin side-by-side for visual inspection.
 
 ## Parameter reference
 
