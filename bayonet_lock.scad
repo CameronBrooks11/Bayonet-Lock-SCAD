@@ -104,7 +104,8 @@ module bayonet(
       number_of_pins,
       path_sweep_angle,
       turn_direction,
-      mid_radius,
+      mid_in_radius,
+      mid_out_radius,
       pin_radius,
       allowance,
       part_height,
@@ -123,7 +124,8 @@ module bayonet(
         number_of_pins,
         path_sweep_angle,
         turn_direction,
-        mid_radius,
+        mid_in_radius,
+        mid_out_radius,
         pin_radius,
         allowance,
         part_height,
@@ -139,14 +141,13 @@ module _bayonet_channel(
   number_of_pins,
   path_sweep_angle,
   turn_direction,
-  mid_radius,
+  mid_in_radius,
+  mid_out_radius,
   pin_radius,
   allowance,
   part_height,
   channel_depth
 ) {
-  mid_in_radius = mid_radius - allowance / 2;
-  mid_out_radius = mid_in_radius + allowance;
   shaft_radius = pin_radius + allowance / 2;
 
   // Radial position of the mating surface (where pin meets channel wall)
@@ -171,8 +172,8 @@ module _bayonet_channel(
             }
             // curved sweep path
             sweep_entry_angle =
-              (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_radius)
-              : atan2(shaft_radius - allowance / 4, mid_radius);
+              (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
+              : atan2(shaft_radius - allowance / 4, mid_in_radius + allowance / 2);
             torus_angle =
               (turn_direction == "CW") ? -(path_sweep_angle + sweep_entry_angle)
               : path_sweep_angle + sweep_entry_angle;
@@ -194,8 +195,8 @@ module _bayonet_channel(
             (pin_direction == "inner") ? interface_radius - pin_radius - allowance / 2
             : interface_radius + pin_radius;
           lock_notch_angle =
-            (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_radius)
-            : atan2(shaft_radius - 1.5 * allowance, mid_radius);
+            (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
+            : atan2(shaft_radius - 1.5 * allowance, mid_in_radius + allowance / 2);
           lock_angle =
             (turn_direction == "CW") ? -(path_sweep_angle - lock_notch_angle)
             : path_sweep_angle - lock_notch_angle;
