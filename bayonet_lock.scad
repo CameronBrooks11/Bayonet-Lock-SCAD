@@ -176,12 +176,16 @@ module _bayonet_channel(
             torus_angle =
               (turn_direction == "CW") ? -(path_sweep_angle + sweep_entry_angle)
               : path_sweep_angle + sweep_entry_angle;
+            // Pre-rotate so the sweep always starts at the correct angular position.
+            // rotate_extrude requires a positive angle (supported in all versions with
+            // the angle parameter); the sign of torus_angle sets the direction via rotate.
             translate([0, 0, channel_depth]) {
-              rotate_extrude(angle=torus_angle, convexity=10) {
-                translate([interface_radius, 0, 0]) {
-                  circle(r=shaft_radius);
+              rotate([0, 0, torus_angle])
+                rotate_extrude(angle=abs(torus_angle), convexity=10) {
+                  translate([interface_radius, 0, 0]) {
+                    circle(r=shaft_radius);
+                  }
                 }
-              }
             }
           }
 
