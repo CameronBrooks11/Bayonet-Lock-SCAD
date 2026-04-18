@@ -6,6 +6,15 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.5.1] - 2026-04-18
+
+### Changed
+
+- Replaced monolithic `example_usage.scad` with an `examples/` directory containing four focused, immediately-renderable files: `outer_3pin_with_neck.scad`, `inner_2pin_no_neck.scad`, `outer_4pin_ccw.scad`, and `minimal.scad`. Each renders both halves side-by-side and demonstrates a distinct combination of `pin_direction`, `number_of_pins`, `turn_direction`, and neck usage.
+- README: replaced `example_usage.scad` reference with an examples table linking to each file.
+
+---
+
 ## [0.5.0] - 2026-04-18
 
 ### Added
