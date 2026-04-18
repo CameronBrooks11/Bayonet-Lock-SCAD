@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.5.1
+// version 0.5.2
 
 // Hollow cylindrical tube primitive — outer shell minus thru-bore.
 // The bore is triple-height and centered to avoid z-fighting on both faces.

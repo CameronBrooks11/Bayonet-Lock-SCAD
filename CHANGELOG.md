@@ -6,6 +6,14 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.5.2] - 2026-04-18
+
+### Fixed
+
+- `rotate_extrude` pre-rotation was applied unconditionally, misaligning the torus arc for CCW locks. The `rotate([0,0,torus_angle])` wrapper is now conditional on `turn_direction == "CW"` only; CCW sweeps start at 0° and need no pre-rotation. This caused the channel arc to be offset from the entry shaft by exactly `path_sweep_angle` degrees for any CCW configuration.
+
+---
+
 ## [0.5.1] - 2026-04-18
 
 ### Changed
