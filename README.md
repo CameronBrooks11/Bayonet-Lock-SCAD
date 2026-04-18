@@ -11,12 +11,6 @@ Key features:
 
 The design improves upon earlier versions by modularizing the code and addressing issues from the original implementation. Contributions and feedback are welcome.
 
-Modified from:
+## License & Attribution
 
-- [bayonet Lock Connector library V2.1](https://www.thingiverse.com/thing:6536797/files)
-- [bayonet Lock Connector OpenSCAD library V2](https://www.thingiverse.com/thing:5442422)
-- [bayonet Lock Connector OpenSCAD library](https://www.thingiverse.com/thing:3471896)
-
-## License
-
-Originally developed by [xavierasx](https://www.thingiverse.com/xavierasx), licensed under **CC BY**.
+Originally developed by [xavierasx](https://www.thingiverse.com/xavierasx), this is a rewritten version of [bayonet Lock Connector library V2.1](https://www.thingiverse.com/thing:6536797) which is originally licensed under **CC BY**.
