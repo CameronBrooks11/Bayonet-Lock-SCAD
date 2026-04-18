@@ -6,7 +6,6 @@ use <bayonet_lock.scad>;
 
 // ---- global settings ----
 $fn = $preview ? 64 : 128;
-zFite = $preview ? 0.05 : 0.0; // small height to avoid visual z-fighting on preview
 
 // ---- user settings ----
 
@@ -40,8 +39,8 @@ manual_pin_radius = 1;
 // Height of the connector part
 part_height = 10;
 
-// Height of the connector part
-depth = 5;
+// Axial height at which the bayonet turn begins
+channel_depth = 5;
 
 // height of the added neck to create a flange
 neck_height = 5;
@@ -53,7 +52,7 @@ pin_radius = (manual_pin_radius == 0) ? (outer_radius - inner_radius) / 4 : manu
 
 neck_h = (part_to_render == "lock") ? 0 : neck_height;
 
-add_neck(neck_h, inner_radius, outer_radius)
+bayonet_neck(neck_h, inner_radius, outer_radius)
   bayonet(
     part_to_render=part_to_render,
     pin_direction=pin_direction,
@@ -65,5 +64,5 @@ add_neck(neck_h, inner_radius, outer_radius)
     pin_radius=pin_radius,
     allowance=allowance,
     part_height=part_height,
-    depth=depth
+    channel_depth=channel_depth
   );

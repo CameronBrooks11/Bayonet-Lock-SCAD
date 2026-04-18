@@ -6,6 +6,26 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.4.0] - 2026-04-18
+
+### Added
+
+- `assert` guards on `part_to_render`, `pin_direction`, and `turn_direction` in `bayonet` and `_bayonet_channel` — invalid strings now produce a clear error instead of silent empty geometry.
+
+### Changed
+
+- `add_neck` renamed to `bayonet_neck` for consistent `bayonet_` public module prefix.
+- `depth` parameter renamed to `channel_depth` across all modules and `example_usage.scad` for clarity (it is an axial Z-position, not a material depth).
+- `bayonet_channel` renamed to `_bayonet_channel` (leading underscore signals internal/private by convention).
+- Removed duplicate `pin_position` variable inside `_bayonet_channel`; replaced its sole use with the already-computed `interface_radius`.
+- `lock_pos` computation replaced floating-point equality checks on derived radii with a direct `pin_direction` string comparison.
+- `thorus_angle` typo corrected to `torus_angle`.
+- `add_angle1` / `add_angle2` renamed to `sweep_entry_angle` / `lock_notch_angle`.
+- All positional `cylinder(h, r, r)` calls converted to named-parameter form `cylinder(h=..., r=...)`.
+- Removed unused `zFite` variable from `example_usage.scad`.
+
+---
+
 ## [0.3.0] - 2026-04-18
 
 ### Changed
