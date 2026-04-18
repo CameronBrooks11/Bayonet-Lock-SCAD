@@ -38,19 +38,19 @@ See `example_usage.scad` for a complete working example with `manual_pin_radius`
 
 ## Parameter reference
 
-| Parameter | Type | Description |
-|---|---|---|
-| `part_to_render` | `"pin"` \| `"lock"` | Which half to generate |
-| `pin_direction` | `"inner"` \| `"outer"` | Pin protrudes toward bore or OD |
-| `number_of_pins` | int ≥ 1 | Number of locking points |
-| `path_sweep_angle` | degrees | Arc the pin travels; must be < 360/number_of_pins |
-| `turn_direction` | `"CW"` \| `"CCW"` | Direction of the locking rotation |
-| `inner_radius` | mm | Bore radius |
-| `outer_radius` | mm | Outer shell radius; must be > inner_radius |
-| `pin_radius` | mm > 0 | Radius of the locking pin sphere |
-| `allowance` | mm ≥ 0 | Radial clearance between mating shells |
-| `part_height` | mm | Total axial height of the connector |
-| `channel_depth` | mm | Axial Z position where the bayonet turn begins (0 < channel_depth < part_height) |
+| Parameter          | Type                   | Description                                                                      |
+| ------------------ | ---------------------- | -------------------------------------------------------------------------------- |
+| `part_to_render`   | `"pin"` \| `"lock"`    | Which half to generate                                                           |
+| `pin_direction`    | `"inner"` \| `"outer"` | Pin protrudes toward bore or OD                                                  |
+| `number_of_pins`   | int ≥ 1                | Number of locking points                                                         |
+| `path_sweep_angle` | degrees                | Arc the pin travels; must be < 360/number_of_pins                                |
+| `turn_direction`   | `"CW"` \| `"CCW"`      | Direction of the locking rotation                                                |
+| `inner_radius`     | mm                     | Bore radius                                                                      |
+| `outer_radius`     | mm                     | Outer shell radius; must be > inner_radius                                       |
+| `pin_radius`       | mm > 0                 | Radius of the locking pin sphere                                                 |
+| `allowance`        | mm ≥ 0                 | Radial clearance between mating shells                                           |
+| `part_height`      | mm                     | Total axial height of the connector                                              |
+| `channel_depth`    | mm                     | Axial Z position where the bayonet turn begins (0 < channel_depth < part_height) |
 
 `bayonet_neck(neck_height, inner_radius, outer_radius)` adds a plain hollow cylinder below the bayonet body. Pass the bayonet module as a child.
 
