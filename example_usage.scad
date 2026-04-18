@@ -1,7 +1,7 @@
 // example usage of the bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.4.1
+// version 0.5.0
 
 use <bayonet_lock.scad>;
 

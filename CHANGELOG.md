@@ -6,6 +6,31 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.5.0] - 2026-04-18
+
+### Added
+
+- 8 input range assertions in `bayonet`: `inner_radius > 0`, `outer_radius > inner_radius`, `pin_radius > 0`, `allowance >= 0`, `number_of_pins >= 1`, `channel_depth > 0`, `channel_depth < part_height`, `path_sweep_angle > 0`, and `path_sweep_angle < 360 / number_of_pins` (overlap guard).
+
+### Fixed
+
+- Removed `#` debug modifier from `tube`'s inner cylinder (caused bright-pink highlight in all previews and renders).
+- Removed `color("Red")` from the channel cutout in the `bayonet` lock branch (same class of debug leak).
+- `example_usage.scad`: `neck_outer_radius` now resolves to `mid_in_radius` when `pin_direction == "outer"`, matching the actual pin shell OD and eliminating the 2.6 mm neck/body step.
+- `rotate_extrude` no longer receives a negative `angle`; a wrapping `rotate([0, 0, torus_angle])` pre-orients the sweep and `abs(torus_angle)` is passed to `rotate_extrude`, ensuring compatibility with OpenSCAD versions that require a positive angle argument.
+
+### Changed
+
+- `_bayonet_channel` signature: replaced `mid_radius` parameter with `mid_in_radius` and `mid_out_radius`; both call sites in `bayonet` now pass the already-computed values, eliminating the duplicate derivation inside the private module.
+- Removed three redundant `assert` blocks from `_bayonet_channel`; all three parameters are already validated by the public `bayonet` module before the call.
+- Added inline comments explaining the asymmetric angle-offset multipliers in `sweep_entry_angle` and `lock_notch_angle`, and the `allowance/2` radial correction asymmetry in `lock_pos`.
+
+### Docs
+
+- README: removed stale "two or four locking points" and FreeCAD detail-setting references; added Usage code block and full parameter reference table.
+
+---
+
 ## [0.4.1] - 2026-04-18
 
 ### Added
