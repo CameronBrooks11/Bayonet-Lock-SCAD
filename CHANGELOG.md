@@ -6,6 +6,14 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.4.1] - 2026-04-18
+
+### Added
+
+- `tube(h, r_outer, r_inner)` primitive module encapsulating the repeated hollow-cylinder boolean pattern (outer shell minus triple-height centered bore). Used by `bayonet_neck`, and both pin/lock branches of `bayonet`, removing three instances of duplicated `difference()`/`cylinder` pairs.
+
+---
+
 ## [0.4.0] - 2026-04-18
 
 ### Added
