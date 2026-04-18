@@ -81,8 +81,7 @@ module bayonet(
       // channel-bearing shell body
       tube(h=part_height, r_outer=lock_ext_r, r_inner=lock_int_r);
       // cut out the locking channel
-      color("Red")
-        _bayonet_channel(
+      _bayonet_channel(
           part_to_render,
           pin_direction,
           number_of_pins,

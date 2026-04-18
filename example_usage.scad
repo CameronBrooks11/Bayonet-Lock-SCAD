@@ -11,10 +11,10 @@ $fn = $preview ? 64 : 128;
 // ---- user settings ----
 
 // What style of lock to produce, with the pin pointed inward ou outward?
-pin_direction = "inner"; // ["inner", "outer"]
+pin_direction = "outer"; // ["inner", "outer"]
 
 // What to render
-part_to_render = "pin"; // ["pin", "lock"]
+part_to_render = "lock"; // ["pin", "lock"]
 
 // Render the mechanism with 2 to 6 locks / pins
 number_of_pins = 3;
@@ -51,9 +51,15 @@ neck_height = 5;
 // radius of the locking pin
 pin_radius = (manual_pin_radius == 0) ? (outer_radius - inner_radius) / 4 : manual_pin_radius;
 
+// Outer radius of the neck must match the pin shell's outer wall.
+// When pin_direction=="outer" the pin shell ends at mid_in_radius, not outer_radius.
+neck_outer_radius = (pin_direction == "outer")
+  ? (inner_radius + outer_radius) / 2 - allowance / 2
+  : outer_radius;
+
 neck_h = (part_to_render == "lock") ? 0 : neck_height;
 
-bayonet_neck(neck_h, inner_radius, outer_radius)
+bayonet_neck(neck_h, inner_radius, neck_outer_radius)
   bayonet(
     part_to_render=part_to_render,
     pin_direction=pin_direction,
