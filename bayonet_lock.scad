@@ -48,6 +48,42 @@ module bayonet(
     turn_direction == "CW" || turn_direction == "CCW",
     str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
   );
+  assert(
+    inner_radius > 0,
+    str("bayonet: inner_radius must be > 0, got: ", inner_radius)
+  );
+  assert(
+    outer_radius > inner_radius,
+    str("bayonet: outer_radius must be > inner_radius (", inner_radius, "), got: ", outer_radius)
+  );
+  assert(
+    pin_radius > 0,
+    str("bayonet: pin_radius must be > 0, got: ", pin_radius)
+  );
+  assert(
+    allowance >= 0,
+    str("bayonet: allowance must be >= 0, got: ", allowance)
+  );
+  assert(
+    number_of_pins >= 1,
+    str("bayonet: number_of_pins must be >= 1, got: ", number_of_pins)
+  );
+  assert(
+    channel_depth > 0,
+    str("bayonet: channel_depth must be > 0, got: ", channel_depth)
+  );
+  assert(
+    channel_depth < part_height,
+    str("bayonet: channel_depth (", channel_depth, ") must be < part_height (", part_height, ")")
+  );
+  assert(
+    path_sweep_angle > 0,
+    str("bayonet: path_sweep_angle must be > 0, got: ", path_sweep_angle)
+  );
+  assert(
+    path_sweep_angle < 360 / number_of_pins,
+    str("bayonet: path_sweep_angle (", path_sweep_angle, ") must be < 360/number_of_pins (", 360 / number_of_pins, ") to avoid channel overlap")
+  );
 
   mid_radius = (inner_radius + outer_radius) / 2;
   mid_in_radius = mid_radius - allowance / 2;
@@ -82,17 +118,17 @@ module bayonet(
       tube(h=part_height, r_outer=lock_ext_r, r_inner=lock_int_r);
       // cut out the locking channel
       _bayonet_channel(
-          part_to_render,
-          pin_direction,
-          number_of_pins,
-          path_sweep_angle,
-          turn_direction,
-          mid_radius,
-          pin_radius,
-          allowance,
-          part_height,
-          channel_depth
-        );
+        part_to_render,
+        pin_direction,
+        number_of_pins,
+        path_sweep_angle,
+        turn_direction,
+        mid_radius,
+        pin_radius,
+        allowance,
+        part_height,
+        channel_depth
+      );
     }
   }
 }
