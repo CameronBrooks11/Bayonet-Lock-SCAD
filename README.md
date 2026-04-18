@@ -18,19 +18,22 @@ The design improves upon earlier versions by modularizing the code and addressin
 ```
 use <bayonet_lock.scad>;
 
-bayonet_neck(neck_height, inner_radius, outer_radius)
+// interface_r = inner_radius + shell_thickness (mating surface, use for neck alignment)
+neck_outer_r = inner_radius + shell_thickness - allowance / 2;
+
+bayonet_neck(neck_height, inner_radius, neck_outer_r)
   bayonet(
-    part_to_render = "pin",   // "pin" | "lock"
-    pin_direction  = "outer", // "inner" | "outer"
-    number_of_pins = 3,
-    path_sweep_angle = 30,    // degrees; must be < 360/number_of_pins
-    turn_direction = "CW",    // "CW" | "CCW"
-    inner_radius   = 10,
-    outer_radius   = 15,
-    pin_radius     = 1,
-    allowance      = 0.2,
-    part_height    = 10,
-    channel_depth  = 5        // axial Z position where the bayonet turn begins
+    half            = "pin",    // "pin" | "lock"
+    inner_radius    = 10,
+    shell_thickness = 2.5,      // each shell wall; outer_r = inner_radius + 2 * shell_thickness
+    allowance       = 0.2,
+    part_height     = 10,
+    entry_depth     = 5,        // insertion depth from top before the turn begins
+    number_of_pins  = 3,
+    pin_radius      = 1,
+    sweep_angle     = 30,       // degrees; must be < 360/number_of_pins
+    pin_direction   = "outer",  // "inner" | "outer"
+    turn_direction  = "CW"      // "CW" | "CCW"
   );
 ```
 
@@ -47,21 +50,21 @@ Each file renders both the lock and pin side-by-side for visual inspection.
 
 ## Parameter reference
 
-| Parameter          | Type                   | Description                                                                      |
-| ------------------ | ---------------------- | -------------------------------------------------------------------------------- |
-| `part_to_render`   | `"pin"` \| `"lock"`    | Which half to generate                                                           |
-| `pin_direction`    | `"inner"` \| `"outer"` | Pin protrudes toward bore or OD                                                  |
-| `number_of_pins`   | int ≥ 1                | Number of locking points                                                         |
-| `path_sweep_angle` | degrees                | Arc the pin travels; must be < 360/number_of_pins                                |
-| `turn_direction`   | `"CW"` \| `"CCW"`      | Direction of the locking rotation                                                |
-| `inner_radius`     | mm                     | Bore radius                                                                      |
-| `outer_radius`     | mm                     | Outer shell radius; must be > inner_radius                                       |
-| `pin_radius`       | mm > 0                 | Radius of the locking pin sphere                                                 |
-| `allowance`        | mm ≥ 0                 | Radial clearance between mating shells                                           |
-| `part_height`      | mm                     | Total axial height of the connector                                              |
-| `channel_depth`    | mm                     | Axial Z position where the bayonet turn begins (0 < channel_depth < part_height) |
+| Parameter | Type | Description |
+|---|---|---|
+| `half` | `"pin"` \| `"lock"` | Which half to generate |
+| `inner_radius` | mm > 0 | Bore inner radius |
+| `shell_thickness` | mm > 0 | Radial thickness of each shell wall; outer radius = `inner_radius + 2 * shell_thickness` |
+| `allowance` | mm ≥ 0 | Radial clearance applied ±allowance/2 around the mating surface |
+| `part_height` | mm | Total axial height of the connector |
+| `entry_depth` | mm | Insertion depth from the top face before the bayonet turn begins; must be < part_height |
+| `number_of_pins` | int ≥ 1 | Number of locking points |
+| `pin_radius` | mm | Radius of the locking pin sphere; must satisfy pin_radius + allowance/2 ≤ shell_thickness |
+| `sweep_angle` | degrees | Arc the pin travels; must be > 0 and < 360/number_of_pins |
+| `pin_direction` | `"inner"` \| `"outer"` | Whether the pin protrudes toward the bore or toward the OD |
+| `turn_direction` | `"CW"` \| `"CCW"` | Direction of the locking rotation |
 
-`bayonet_neck(neck_height, inner_radius, outer_radius)` adds a plain hollow cylinder below the bayonet body. Pass the bayonet module as a child.
+`bayonet_neck(neck_height, inner_radius, outer_radius)` adds a plain hollow cylinder below the bayonet body. Pass the bayonet module as a child. For a flush joint use `outer_radius = inner_radius + shell_thickness - allowance / 2`.
 
 ## License & Attribution
 

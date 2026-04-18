@@ -8,31 +8,32 @@ $fn = $preview ? 64 : 128;
 
 // Lock — rendered at origin
 bayonet(
-  part_to_render  = "lock",
-  pin_direction   = "inner",
-  number_of_pins  = 2,
-  path_sweep_angle = 40,
-  turn_direction  = "CW",
+  half            = "lock",
   inner_radius    = 8,
-  outer_radius    = 12,
-  pin_radius      = 1,
+  shell_thickness = 2,
   allowance       = 0.2,
   part_height     = 8,
-  channel_depth   = 4
+  entry_depth     = 4,
+  number_of_pins  = 2,
+  pin_radius      = 1,
+  sweep_angle     = 40,
+  pin_direction   = "inner",
+  turn_direction  = "CW"
 );
 
 // Pin — translated right for side-by-side comparison
 translate([29, 0, 0])
   bayonet(
-    part_to_render  = "pin",
-    pin_direction   = "inner",
-    number_of_pins  = 2,
-    path_sweep_angle = 40,
-    turn_direction  = "CW",
+    half            = "pin",
     inner_radius    = 8,
-    outer_radius    = 12,
-    pin_radius      = 1,
+    shell_thickness = 2,
     allowance       = 0.2,
     part_height     = 8,
-    channel_depth   = 4
+    entry_depth     = 4,
+    number_of_pins  = 2,
+    pin_radius      = 1,
+    sweep_angle     = 40,
+    pin_direction   = "inner",
+    turn_direction  = "CW"
   );
+

@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.5.2
+// version 0.6.0
 
 // Hollow cylindrical tube primitive — outer shell minus thru-bore.
 // The bore is triple-height and centered to avoid z-fighting on both faces.
@@ -24,147 +24,124 @@ module bayonet_neck(neck_height, inner_radius, outer_radius) {
 }
 
 module bayonet(
-  part_to_render,
-  pin_direction,
-  number_of_pins,
-  path_sweep_angle,
-  turn_direction,
+  half,
   inner_radius,
-  outer_radius,
-  pin_radius,
+  shell_thickness,
   allowance,
   part_height,
-  channel_depth
+  entry_depth,
+  number_of_pins,
+  pin_radius,
+  sweep_angle,
+  pin_direction,
+  turn_direction
 ) {
-  assert(
-    part_to_render == "pin" || part_to_render == "lock",
-    str("bayonet: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render)
-  );
-  assert(
-    pin_direction == "inner" || pin_direction == "outer",
-    str("bayonet: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction)
-  );
-  assert(
-    turn_direction == "CW" || turn_direction == "CCW",
-    str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
-  );
-  assert(
-    inner_radius > 0,
-    str("bayonet: inner_radius must be > 0, got: ", inner_radius)
-  );
-  assert(
-    outer_radius > inner_radius,
-    str("bayonet: outer_radius must be > inner_radius (", inner_radius, "), got: ", outer_radius)
-  );
-  assert(
-    pin_radius > 0,
-    str("bayonet: pin_radius must be > 0, got: ", pin_radius)
-  );
-  assert(
-    allowance >= 0,
-    str("bayonet: allowance must be >= 0, got: ", allowance)
-  );
-  assert(
-    number_of_pins >= 1,
-    str("bayonet: number_of_pins must be >= 1, got: ", number_of_pins)
-  );
-  assert(
-    channel_depth > 0,
-    str("bayonet: channel_depth must be > 0, got: ", channel_depth)
-  );
-  assert(
-    channel_depth < part_height,
-    str("bayonet: channel_depth (", channel_depth, ") must be < part_height (", part_height, ")")
-  );
-  assert(
-    path_sweep_angle > 0,
-    str("bayonet: path_sweep_angle must be > 0, got: ", path_sweep_angle)
-  );
-  assert(
-    path_sweep_angle < 360 / number_of_pins,
-    str("bayonet: path_sweep_angle (", path_sweep_angle, ") must be < 360/number_of_pins (", 360 / number_of_pins, ") to avoid channel overlap")
-  );
+  shaft_radius = pin_radius + allowance / 2;
 
-  mid_radius = (inner_radius + outer_radius) / 2;
-  mid_in_radius = mid_radius - allowance / 2;
-  mid_out_radius = mid_in_radius + allowance;
+  assert(half == "pin" || half == "lock",
+    str("bayonet: half must be \"pin\" or \"lock\", got: ", half));
+  assert(pin_direction == "inner" || pin_direction == "outer",
+    str("bayonet: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction));
+  assert(turn_direction == "CW" || turn_direction == "CCW",
+    str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction));
+  assert(inner_radius > 0,
+    str("bayonet: inner_radius must be > 0, got: ", inner_radius));
+  assert(allowance >= 0,
+    str("bayonet: allowance must be >= 0, got: ", allowance));
+  assert(shell_thickness > 0,
+    str("bayonet: shell_thickness must be > 0, got: ", shell_thickness));
+  assert(shaft_radius <= shell_thickness,
+    str("bayonet: shaft_radius (pin_radius + allowance/2 = ", shaft_radius, ") must be <= shell_thickness (", shell_thickness, ")"));
+  assert(number_of_pins >= 1,
+    str("bayonet: number_of_pins must be >= 1, got: ", number_of_pins));
+  assert(entry_depth > 0,
+    str("bayonet: entry_depth must be > 0, got: ", entry_depth));
+  assert(entry_depth < part_height,
+    str("bayonet: entry_depth (", entry_depth, ") must be < part_height (", part_height, ")"));
+  assert(sweep_angle > 0,
+    str("bayonet: sweep_angle must be > 0, got: ", sweep_angle));
+  assert(sweep_angle < 360 / number_of_pins,
+    str("bayonet: sweep_angle (", sweep_angle, ") must be < 360/number_of_pins (", 360 / number_of_pins, ") to avoid channel overlap"));
+
+  // Canonical mating surface and derived geometry.
+  _interface_r  = inner_radius + shell_thickness;
+  _outer_radius = inner_radius + 2 * shell_thickness;
+  _channel_z    = part_height - entry_depth;
 
   // Determine which annular shell carries the pin vs the channel/lock.
-  // For pin_direction=="inner": the pin is on the outer shell, channel on the inner shell.
-  // For pin_direction=="outer": the pin is on the inner shell, channel on the outer shell.
-  pin_ext_r = (pin_direction == "inner") ? outer_radius : mid_in_radius;
-  pin_int_r = (pin_direction == "inner") ? mid_out_radius : inner_radius;
-  lock_ext_r = (pin_direction == "inner") ? mid_in_radius : outer_radius;
-  lock_int_r = (pin_direction == "inner") ? inner_radius : mid_out_radius;
+  // For pin_direction=="inner": pin on outer shell, channel on inner shell.
+  // For pin_direction=="outer": pin on inner shell, channel on outer shell.
+  pin_ext_r  = (pin_direction == "inner") ? _outer_radius               : _interface_r - allowance / 2;
+  pin_int_r  = (pin_direction == "inner") ? _interface_r + allowance / 2 : inner_radius;
+  lock_ext_r = (pin_direction == "inner") ? _interface_r - allowance / 2 : _outer_radius;
+  lock_int_r = (pin_direction == "inner") ? inner_radius               : _interface_r + allowance / 2;
 
-  if (part_to_render == "pin") {
+  if (half == "pin") {
     _bayonet_channel(
-      part_to_render,
+      half,
       pin_direction,
       number_of_pins,
-      path_sweep_angle,
+      sweep_angle,
       turn_direction,
-      mid_in_radius,
-      mid_out_radius,
+      _interface_r,
       pin_radius,
       allowance,
       part_height,
-      channel_depth
+      _channel_z
     );
     // pin-bearing shell body
     tube(h=part_height, r_outer=pin_ext_r, r_inner=pin_int_r);
-  } else if (part_to_render == "lock") {
+  } else if (half == "lock") {
     difference() {
       // channel-bearing shell body
       tube(h=part_height, r_outer=lock_ext_r, r_inner=lock_int_r);
       // cut out the locking channel
       _bayonet_channel(
-        part_to_render,
+        half,
         pin_direction,
         number_of_pins,
-        path_sweep_angle,
+        sweep_angle,
         turn_direction,
-        mid_in_radius,
-        mid_out_radius,
+        _interface_r,
         pin_radius,
         allowance,
         part_height,
-        channel_depth
+        _channel_z
       );
     }
   }
 }
 
 module _bayonet_channel(
-  part_to_render,
+  half,
   pin_direction,
   number_of_pins,
-  path_sweep_angle,
+  sweep_angle,
   turn_direction,
-  mid_in_radius,
-  mid_out_radius,
+  interface_r,
   pin_radius,
   allowance,
   part_height,
   channel_depth
 ) {
-  shaft_radius = pin_radius + allowance / 2;
-
-  // Radial position of the mating surface (where pin meets channel wall)
-  interface_radius = (pin_direction == "outer") ? mid_in_radius : mid_out_radius;
+  shaft_radius    = pin_radius + allowance / 2;
+  // Radial position of pin centre: ±allowance/2 from the canonical mating surface.
+  pin_interface_r = (pin_direction == "outer")
+    ? interface_r - allowance / 2
+    : interface_r + allowance / 2;
 
   for (runs = [0:number_of_pins - 1]) {
     angle = 360 / number_of_pins * runs;
     rotate([0, 0, angle]) {
-      if (part_to_render == "lock") {
+      if (half == "lock") {
         difference() {
           union() {
             // vertical entry shaft
-            translate([interface_radius, 0, channel_depth]) {
+            translate([pin_interface_r, 0, channel_depth]) {
               cylinder(h=part_height - channel_depth + shaft_radius, r=shaft_radius);
             }
             // rounded entry transition
-            translate([interface_radius, 0, channel_depth]) {
+            translate([pin_interface_r, 0, channel_depth]) {
               difference() {
                 sphere(shaft_radius);
                 cylinder(h=shaft_radius * 2, r=shaft_radius * 2);
@@ -172,22 +149,21 @@ module _bayonet_channel(
             }
             // curved sweep path
             // Angular correction so the torus cross-section meets the entry shaft tangentially.
-            // Numerator = shaft_radius minus the shaft/torus overlap at the join; overlap differs
-            // by allowance/2 between directions because interface_radius sits on opposite sides of mid.
+            // Numerator = shaft_radius minus the shaft/torus overlap; overlap differs by allowance/2
+            // between directions because pin_interface_r sits ±allowance/2 from interface_r.
             sweep_entry_angle =
-              (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
-              : atan2(shaft_radius - allowance / 4, mid_in_radius + allowance / 2);
+              (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
+              : atan2(shaft_radius - allowance / 4, interface_r);
             torus_angle =
-              (turn_direction == "CW") ? -(path_sweep_angle + sweep_entry_angle)
-              : path_sweep_angle + sweep_entry_angle;
+              (turn_direction == "CW") ? -(sweep_angle + sweep_entry_angle)
+              : sweep_angle + sweep_entry_angle;
             // Pre-rotate only for CW: torus_angle is negative, so rotating by it places
             // the profile start at torus_angle°; sweeping abs(torus_angle) CCW returns to 0°
-            // (the entry shaft). For CCW torus_angle is already positive and no pre-rotation
-            // is needed — rotate_extrude sweeps directly from 0° to torus_angle°.
+            // (the entry shaft). For CCW no pre-rotation needed — sweep runs 0° to torus_angle°.
             translate([0, 0, channel_depth]) {
               rotate([0, 0, (turn_direction == "CW") ? torus_angle : 0])
                 rotate_extrude(angle=abs(torus_angle), convexity=10) {
-                  translate([interface_radius, 0, 0]) {
+                  translate([pin_interface_r, 0, 0]) {
                     circle(r=shaft_radius);
                   }
                 }
@@ -195,20 +171,19 @@ module _bayonet_channel(
           }
 
           // locking notch cutout
-          // Radial position of notch centre: one pin_radius past the channel wall.
-          // "inner" needs an extra -allowance/2 to stay mid-symmetric (interface = mid_out_radius);
-          // "outer" does not (interface = mid_in_radius already sits allowance/2 short of mid).
+          // Inner: notch at interface_r - pin_radius (symmetric about interface_r).
+          // Outer: notch at interface_r - allowance/2 + pin_radius (pin centre sits allowance/2 inside interface_r).
           lock_pos =
-            (pin_direction == "inner") ? interface_radius - pin_radius - allowance / 2
-            : interface_radius + pin_radius;
+            (pin_direction == "inner") ? interface_r - pin_radius
+            : interface_r - allowance / 2 + pin_radius;
           // Same atan2 geometry as sweep_entry_angle; places the notch under the pin at end-of-travel.
-          // 1.5*allowance for "outer" is empirically tuned to align with the outer interface offset.
+          // 1.5*allowance for "outer" is empirically tuned to align with the outer-direction interface offset.
           lock_notch_angle =
-            (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
-            : atan2(shaft_radius - 1.5 * allowance, mid_in_radius + allowance / 2);
+            (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
+            : atan2(shaft_radius - 1.5 * allowance, interface_r);
           lock_angle =
-            (turn_direction == "CW") ? -(path_sweep_angle - lock_notch_angle)
-            : path_sweep_angle - lock_notch_angle;
+            (turn_direction == "CW") ? -(sweep_angle - lock_notch_angle)
+            : sweep_angle - lock_notch_angle;
           x = cos(lock_angle) * lock_pos;
           y = sin(lock_angle) * lock_pos;
           z = channel_depth - shaft_radius;
@@ -216,9 +191,9 @@ module _bayonet_channel(
             cylinder(h=2 * shaft_radius, r=allowance);
           }
         }
-      } else if (part_to_render == "pin") {
+      } else if (half == "pin") {
         // locking pin sphere
-        translate([interface_radius, 0, part_height - channel_depth]) {
+        translate([pin_interface_r, 0, part_height - channel_depth]) {
           sphere(pin_radius);
         }
       }

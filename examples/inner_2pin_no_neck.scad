@@ -6,43 +6,44 @@ use <../bayonet_lock.scad>;
 
 $fn = $preview ? 64 : 128;
 
-inner_radius     = 12;
-outer_radius     = 18;
-pin_radius       = 1.5;
-allowance        = 0.25;
-number_of_pins   = 2;
-path_sweep_angle = 45;
-turn_direction   = "CCW";
-part_height      = 12;
-channel_depth    = 6;
+inner_radius    = 12;
+shell_thickness = 3;
+pin_radius      = 1.5;
+allowance       = 0.25;
+number_of_pins  = 2;
+sweep_angle     = 45;
+turn_direction  = "CCW";
+part_height     = 12;
+entry_depth     = 6;
 
 // Lock — rendered at origin
 bayonet(
-  part_to_render  = "lock",
-  pin_direction   = "inner",
-  number_of_pins  = number_of_pins,
-  path_sweep_angle = path_sweep_angle,
-  turn_direction  = turn_direction,
+  half            = "lock",
   inner_radius    = inner_radius,
-  outer_radius    = outer_radius,
-  pin_radius      = pin_radius,
+  shell_thickness = shell_thickness,
   allowance       = allowance,
   part_height     = part_height,
-  channel_depth   = channel_depth
+  entry_depth     = entry_depth,
+  number_of_pins  = number_of_pins,
+  pin_radius      = pin_radius,
+  sweep_angle     = sweep_angle,
+  pin_direction   = "inner",
+  turn_direction  = turn_direction
 );
 
 // Pin — translated right for side-by-side comparison (no neck)
-translate([outer_radius * 2 + 5, 0, 0])
+translate([(inner_radius + 2 * shell_thickness) * 2 + 5, 0, 0])
   bayonet(
-    part_to_render  = "pin",
-    pin_direction   = "inner",
-    number_of_pins  = number_of_pins,
-    path_sweep_angle = path_sweep_angle,
-    turn_direction  = turn_direction,
+    half            = "pin",
     inner_radius    = inner_radius,
-    outer_radius    = outer_radius,
-    pin_radius      = pin_radius,
+    shell_thickness = shell_thickness,
     allowance       = allowance,
     part_height     = part_height,
-    channel_depth   = channel_depth
+    entry_depth     = entry_depth,
+    number_of_pins  = number_of_pins,
+    pin_radius      = pin_radius,
+    sweep_angle     = sweep_angle,
+    pin_direction   = "inner",
+    turn_direction  = turn_direction
   );
+

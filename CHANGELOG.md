@@ -6,6 +6,35 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.6.0] - 2026-04-18
+
+### Breaking Changes
+
+The `bayonet` module has a new signature. All named arguments must be updated.
+
+| Old parameter | New parameter | Notes |
+|---|---|---|
+| `part_to_render` | `half` | Same values: `"pin"` \| `"lock"` |
+| `outer_radius` | `shell_thickness` | `shell_thickness = (outer_radius - inner_radius) / 2` |
+| `path_sweep_angle` | `sweep_angle` | Identical semantics |
+| `channel_depth` | `entry_depth` | Identical semantics |
+| *(removed)* `mid_in_radius`, `mid_out_radius` | *(internal)* `_interface_r` | These were never intended as public params; now derived inside the module |
+
+Parameter order has also changed to group geometry first, then count/angle, then mode flags.
+
+### Changed
+
+- Replaced `outer_radius` with `shell_thickness` (radial depth of each shell wall). The canonical mating surface is now `_interface_r = inner_radius + shell_thickness`, derived once inside the module. Previously callers had to know that `mid_radius = (inner_radius + outer_radius) / 2` was the operative surface.
+- Renamed `part_to_render` → `half`, `path_sweep_angle` → `sweep_angle`, `channel_depth` → `entry_depth` for clarity.
+- New validation asserts cover the rewritten constraints: `shell_thickness > 0`, `shaft_radius <= shell_thickness` (replaces `outer_radius > inner_radius`), `entry_depth > 0`, `entry_depth < part_height`, `sweep_angle` bounds.
+- `_bayonet_channel` internal parameter `mid_in_radius`/`mid_out_radius` replaced by single canonical `interface_r` plus derived `pin_interface_r`.
+- `lock_pos` inner-direction formula simplified: was `interface_radius - pin_radius - allowance/2`, now `interface_r - pin_radius` (the `allowance/2` offset cancels algebraically with the new derivation).
+- atan2 denominators updated from `mid_in_radius + allowance/2` to `interface_r` (equivalent value, now expressed through the canonical reference).
+- Example files updated: `outer_radius` variable replaced with `shell_thickness`, neck formula updated to `inner_radius + shell_thickness - allowance / 2`.
+- README usage block and parameter table updated.
+
+---
+
 ## [0.5.2] - 2026-04-18
 
 ### Fixed
