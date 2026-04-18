@@ -2,73 +2,11 @@
 // Cameron K. Brooks
 // MIT License
 
-// ---- global settings ----
-$fn = $preview ? 64 : 128;
-zFite = $preview ? 0.05 : 0.0; // small height to avoid visual z-fighting on preview
-
-// ---- user settings ----
-
-// What style of lock to produce, with the pin pointed inward ou outward?
-pin_direction = "inner"; // ["inner", "outer"]
-
-// What to render
-part_render = "pin"; // ["pin", "lock"]
-// Render the mechanism with 2 to 6 locks / pins
-number_of_pins = 3;
-
-// The angle of the path that the pin will follow
-path_sweep_angle = 30;
-
-// Direction of the lock
-turn_direction = "CW"; // ["CW", "CCW"]
-
-// inner radius of the lock
-inner_radius = 10;
-
-// outer radius of the lock
-outer_radius = 15;
-
-// the allowance or "gap" between the pin and the lock
-allowance = 0.2;
-
-// manual pin radius, if not set, it will be calculated based on the inner and outer radius
-manual_pin_radius = 1;
-
-// Height of the connector part
-part_height = 10;
-
-// Height of the connector part
-conn_height = 5;
-
-// height of the added neck to create a flange
-neck_height = 5;
-
-// ---- derived values ----
-
-// radius of the locking pin
-pin_radius = (manual_pin_radius == 0) ? (outer_radius - inner_radius) / 4 : manual_pin_radius;
-
-if (pin_direction == "inner") {
-  neck_h = (part_render == "lock") ? 0 : neck_height;
-  add_neck(neck_h, inner_radius, outer_radius)
-    inner_bayonet(
-      part_render, pin_direction, number_of_pins, path_sweep_angle, turn_direction, inner_radius,
-      outer_radius, pin_radius, allowance, part_height, conn_height
-    );
-} else {
-  neck_h = (part_render == "lock") ? 0 : neck_height;
-  add_neck(neck_h, inner_radius, outer_radius)
-    outer_bayonet(
-      part_render, pin_direction, number_of_pins, path_sweep_angle, turn_direction, inner_radius,
-      outer_radius, pin_radius, allowance, part_height, conn_height
-    );
-}
-
 module add_neck(neck_height, inner_radius, outer_radius) {
   union() {
     difference() {
       cylinder(d=outer_radius * 2, h=neck_height);
-      translate([0, 0, -zFite / 2]) cylinder(d=inner_radius * 2, h=neck_height + zFite);
+      cylinder(d=inner_radius * 2, h=neck_height);
     }
     translate([0, 0, neck_height]) {
       children();
@@ -97,8 +35,16 @@ module inner_bayonet(
 
   if (part_to_render == "pin") {
     bayonet_channel(
-      part_to_render, pin_direction, number_of_pins, path_sweep_angle, turn_direction, mid_radius,
-      pin_radius, allowance, conn_height
+      part_to_render,
+      pin_direction,
+      number_of_pins,
+      path_sweep_angle,
+      turn_direction,
+      mid_radius,
+      pin_radius,
+      allowance,
+      part_height,
+      depth
     );
     difference() {
       // external cylinder
@@ -119,9 +65,18 @@ module inner_bayonet(
       }
 
       // cut out the locking channel
-      color("Red") bayonet_channel(
-          part_to_render, pin_direction, number_of_pins, path_sweep_angle,
-          turn_direction, mid_radius, pin_radius, allowance, conn_height
+      color("Red")
+        bayonet_channel(
+          part_to_render,
+          pin_direction,
+          number_of_pins,
+          path_sweep_angle,
+          turn_direction,
+          mid_radius,
+          pin_radius,
+          allowance,
+          part_height,
+          depth
         );
     }
   }
@@ -148,8 +103,16 @@ module outer_bayonet(
 
   if (part_to_render == "pin") {
     bayonet_channel(
-      part_to_render, pin_direction, number_of_pins, path_sweep_angle, turn_direction, mid_radius,
-      pin_radius, allowance, conn_height
+      part_to_render,
+      pin_direction,
+      number_of_pins,
+      path_sweep_angle,
+      turn_direction,
+      mid_radius,
+      pin_radius,
+      allowance,
+      part_height,
+      depth
     );
     difference() {
       // external cylinder
@@ -167,9 +130,18 @@ module outer_bayonet(
       translate([0, 0, -part_height / 100]) {
         cylinder(part_height + (part_height / 50), mid_out_radius, mid_out_radius);
       }
-      color("Red") bayonet_channel(
-          part_to_render, pin_direction, number_of_pins, path_sweep_angle,
-          turn_direction, mid_radius, pin_radius, allowance, conn_height
+      color("Red")
+        bayonet_channel(
+          part_to_render,
+          pin_direction,
+          number_of_pins,
+          path_sweep_angle,
+          turn_direction,
+          mid_radius,
+          pin_radius,
+          allowance,
+          part_height,
+          depth
         );
     }
   }
@@ -184,6 +156,7 @@ module bayonet_channel(
   mid_radius,
   pin_radius,
   allowance,
+  part_height,
   depth
 ) {
 
