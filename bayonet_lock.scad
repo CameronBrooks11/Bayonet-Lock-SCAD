@@ -2,15 +2,20 @@
 // Cameron K. Brooks
 // MIT License
 
+// Hollow cylindrical tube primitive — outer shell minus thru-bore.
+// The bore is triple-height and centered to avoid z-fighting on both faces.
+module tube(h, r_outer, r_inner) {
+  difference() {
+    cylinder(h=h, r=r_outer);
+    cylinder(h=h * 3, r=r_inner, center=true);
+  }
+}
+
 // Adds a hollow cylindrical neck/flange below the bayonet body.
 // The bayonet module is passed as a child and positioned at the top of the neck.
 module bayonet_neck(neck_height, inner_radius, outer_radius) {
   union() {
-    difference() {
-      cylinder(d=outer_radius * 2, h=neck_height);
-      // Center and triple height for thru cut without z-fighting
-      cylinder(d=inner_radius * 2, h=neck_height * 3, center=true);
-    }
+    tube(h=neck_height, r_outer=outer_radius, r_inner=inner_radius);
     translate([0, 0, neck_height]) {
       children();
     }
@@ -68,19 +73,12 @@ module bayonet(
       part_height,
       channel_depth
     );
-    difference() {
-      // pin-bearing shell body
-      cylinder(h=part_height, r=pin_ext_r);
-      // internal bore, over-cut for clean boolean
-      cylinder(h=part_height * 3, r=pin_int_r, center=true);
-    }
+    // pin-bearing shell body
+    tube(h=part_height, r_outer=pin_ext_r, r_inner=pin_int_r);
   } else if (part_to_render == "lock") {
     difference() {
       // channel-bearing shell body
-      cylinder(h=part_height, r=lock_ext_r);
-      // internal bore (slightly over-cut for clean boolean)
-      cylinder(h=part_height * 3, r=lock_int_r, center=true);
-
+      tube(h=part_height, r_outer=lock_ext_r, r_inner=lock_int_r);
       // cut out the locking channel
       color("Red")
         _bayonet_channel(
