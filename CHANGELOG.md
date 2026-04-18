@@ -6,6 +6,33 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.7.0] - 2026-04-18
+
+### Added
+
+- `assert(pin_radius > 0)` in `bayonet` module. Previously a zero pin_radius produced
+  a degenerate sphere and silent zero-volume channel; the existing
+  `shaft_radius <= shell_thickness` check did not catch it.
+
+### Fixed
+
+- `minimal.scad`: hardcoded `translate([29, 0, 0])` replaced with the computed
+  expression `translate([(inner_radius + 2 * shell_thickness) * 2 + 5, 0, 0])`,
+  consistent with all other example files.
+- Removed stale `example_usage.scad` from repo root (v0.5.0 API, superseded by
+  the `examples/` directory added in 0.5.1).
+
+### Changed
+
+- Inline comments on the two outer-direction `atan2` branches in `_bayonet_channel`
+  now explicitly state that `allowance / 4` and `1.5 * allowance` are empirically
+  tuned and give the validated parameter range (allowance ∈ [0.1, 0.4],
+  pin_radius ∈ [0.5, 3.0]).
+- README: updated features bullet to reference `shell_thickness` instead of the
+  removed `outer_radius` parameter.
+
+---
+
 ## [0.6.0] - 2026-04-18
 
 ### Breaking Changes

@@ -5,7 +5,7 @@ This OpenSCAD library provides a parametric bayonet lock connector, inspired by 
 Key features:
 
 - Configurable number of locking pins (2 or more).
-- Customizable inner and outer radii for any bore size.
+- Configurable bore radius (`inner_radius`) and shell wall thickness (`shell_thickness`) for any coupling diameter.
 - `pin_direction` parameter selects whether the pin protrudes inward or outward.
 - Adjustable `allowance` (clearance gap) for tuning fit tolerance.
 - Optional neck/flange below the bayonet body via `bayonet_neck`; set `neck_height = 0` to omit.

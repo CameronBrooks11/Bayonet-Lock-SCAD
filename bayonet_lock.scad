@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.6.0
+// version 0.7.0
 
 // Hollow cylindrical tube primitive — outer shell minus thru-bore.
 // The bore is triple-height and centered to avoid z-fighting on both faces.
@@ -48,6 +48,8 @@ module bayonet(
     str("bayonet: inner_radius must be > 0, got: ", inner_radius));
   assert(allowance >= 0,
     str("bayonet: allowance must be >= 0, got: ", allowance));
+  assert(pin_radius > 0,
+    str("bayonet: pin_radius must be > 0, got: ", pin_radius));
   assert(shell_thickness > 0,
     str("bayonet: shell_thickness must be > 0, got: ", shell_thickness));
   assert(shaft_radius <= shell_thickness,
@@ -149,8 +151,10 @@ module _bayonet_channel(
             }
             // curved sweep path
             // Angular correction so the torus cross-section meets the entry shaft tangentially.
-            // Numerator = shaft_radius minus the shaft/torus overlap; overlap differs by allowance/2
-            // between directions because pin_interface_r sits ±allowance/2 from interface_r.
+            // Inner: numerator = shaft_radius - allowance/2, derived from the pin/torus tangent geometry.
+            // Outer: coefficient allowance/4 is empirically tuned; the outer-direction interface offset
+            // shifts the tangent point differently and a closed-form derivation has not been done.
+            // Validated for allowance ∈ [0.1, 0.4] and pin_radius ∈ [0.5, 3.0].
             sweep_entry_angle =
               (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
               : atan2(shaft_radius - allowance / 4, interface_r);
@@ -177,7 +181,9 @@ module _bayonet_channel(
             (pin_direction == "inner") ? interface_r - pin_radius
             : interface_r - allowance / 2 + pin_radius;
           // Same atan2 geometry as sweep_entry_angle; places the notch under the pin at end-of-travel.
-          // 1.5*allowance for "outer" is empirically tuned to align with the outer-direction interface offset.
+          // Inner: same derivation as sweep_entry_angle.
+          // Outer: coefficient 1.5*allowance is empirically tuned; same caveat and validated range
+          // as sweep_entry_angle outer (allowance ∈ [0.1, 0.4], pin_radius ∈ [0.5, 3.0]).
           lock_notch_angle =
             (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
             : atan2(shaft_radius - 1.5 * allowance, interface_r);

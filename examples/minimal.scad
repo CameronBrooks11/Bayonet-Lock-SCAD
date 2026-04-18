@@ -22,7 +22,7 @@ bayonet(
 );
 
 // Pin — translated right for side-by-side comparison
-translate([29, 0, 0])
+translate([(inner_radius + 2 * shell_thickness) * 2 + 5, 0, 0])
   bayonet(
     half            = "pin",
     inner_radius    = 8,
