@@ -8,7 +8,8 @@ module bayonet_neck(neck_height, inner_radius, outer_radius) {
   union() {
     difference() {
       cylinder(d=outer_radius * 2, h=neck_height);
-      cylinder(d=inner_radius * 2, h=neck_height);
+      // Center and triple height for thru cut without z-fighting
+      cylinder(d=inner_radius * 2, h=neck_height * 3, center=true);
     }
     translate([0, 0, neck_height]) {
       children();
@@ -29,24 +30,30 @@ module bayonet(
   part_height,
   channel_depth
 ) {
-  assert(part_to_render == "pin" || part_to_render == "lock",
-    str("bayonet: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render));
-  assert(pin_direction == "inner" || pin_direction == "outer",
-    str("bayonet: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction));
-  assert(turn_direction == "CW" || turn_direction == "CCW",
-    str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction));
+  assert(
+    part_to_render == "pin" || part_to_render == "lock",
+    str("bayonet: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render)
+  );
+  assert(
+    pin_direction == "inner" || pin_direction == "outer",
+    str("bayonet: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction)
+  );
+  assert(
+    turn_direction == "CW" || turn_direction == "CCW",
+    str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
+  );
 
-  mid_radius     = (inner_radius + outer_radius) / 2;
-  mid_in_radius  = mid_radius - allowance / 2;
+  mid_radius = (inner_radius + outer_radius) / 2;
+  mid_in_radius = mid_radius - allowance / 2;
   mid_out_radius = mid_in_radius + allowance;
 
   // Determine which annular shell carries the pin vs the channel/lock.
   // For pin_direction=="inner": the pin is on the outer shell, channel on the inner shell.
   // For pin_direction=="outer": the pin is on the inner shell, channel on the outer shell.
-  pin_ext_r  = (pin_direction == "inner") ? outer_radius   : mid_in_radius;
-  pin_int_r  = (pin_direction == "inner") ? mid_out_radius : inner_radius;
-  lock_ext_r = (pin_direction == "inner") ? mid_in_radius  : outer_radius;
-  lock_int_r = (pin_direction == "inner") ? inner_radius   : mid_out_radius;
+  pin_ext_r = (pin_direction == "inner") ? outer_radius : mid_in_radius;
+  pin_int_r = (pin_direction == "inner") ? mid_out_radius : inner_radius;
+  lock_ext_r = (pin_direction == "inner") ? mid_in_radius : outer_radius;
+  lock_int_r = (pin_direction == "inner") ? inner_radius : mid_out_radius;
 
   if (part_to_render == "pin") {
     _bayonet_channel(
@@ -64,19 +71,16 @@ module bayonet(
     difference() {
       // pin-bearing shell body
       cylinder(h=part_height, r=pin_ext_r);
-      // internal bore (slightly over-cut for clean boolean)
-      translate([0, 0, -part_height / 100]) {
-        cylinder(h=part_height * 1.02, r=pin_int_r);
-      }
+      // internal bore, over-cut for clean boolean
+      cylinder(h=part_height * 3, r=pin_int_r, center=true);
     }
   } else if (part_to_render == "lock") {
     difference() {
       // channel-bearing shell body
       cylinder(h=part_height, r=lock_ext_r);
       // internal bore (slightly over-cut for clean boolean)
-      translate([0, 0, -part_height / 100]) {
-        cylinder(h=part_height * 1.02, r=lock_int_r);
-      }
+      cylinder(h=part_height * 3, r=lock_int_r, center=true);
+
       // cut out the locking channel
       color("Red")
         _bayonet_channel(
@@ -107,16 +111,22 @@ module _bayonet_channel(
   part_height,
   channel_depth
 ) {
-  assert(part_to_render == "pin" || part_to_render == "lock",
-    str("_bayonet_channel: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render));
-  assert(pin_direction == "inner" || pin_direction == "outer",
-    str("_bayonet_channel: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction));
-  assert(turn_direction == "CW" || turn_direction == "CCW",
-    str("_bayonet_channel: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction));
+  assert(
+    part_to_render == "pin" || part_to_render == "lock",
+    str("_bayonet_channel: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render)
+  );
+  assert(
+    pin_direction == "inner" || pin_direction == "outer",
+    str("_bayonet_channel: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction)
+  );
+  assert(
+    turn_direction == "CW" || turn_direction == "CCW",
+    str("_bayonet_channel: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
+  );
 
-  mid_in_radius  = mid_radius - allowance / 2;
+  mid_in_radius = mid_radius - allowance / 2;
   mid_out_radius = mid_in_radius + allowance;
-  shaft_radius   = pin_radius + allowance / 2;
+  shaft_radius = pin_radius + allowance / 2;
 
   // Radial position of the mating surface (where pin meets channel wall)
   interface_radius = (pin_direction == "outer") ? mid_in_radius : mid_out_radius;
