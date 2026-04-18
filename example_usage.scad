@@ -51,40 +51,19 @@ neck_height = 5;
 // radius of the locking pin
 pin_radius = (manual_pin_radius == 0) ? (outer_radius - inner_radius) / 4 : manual_pin_radius;
 
-if (pin_direction == "inner") {
+neck_h = (part_to_render == "lock") ? 0 : neck_height;
 
-  neck_h = (part_to_render == "lock") ? 0 : neck_height;
-
-  add_neck(neck_h, inner_radius, outer_radius)
-    inner_bayonet(
-      part_to_render=part_to_render,
-      pin_direction=pin_direction,
-      number_of_pins=number_of_pins,
-      path_sweep_angle=path_sweep_angle,
-      turn_direction=turn_direction,
-      inner_radius=inner_radius,
-      outer_radius=outer_radius,
-      pin_radius=pin_radius,
-      allowance=allowance,
-      part_height=part_height,
-      depth=depth
-    );
-} else {
-
-  neck_h = (part_to_render == "lock") ? 0 : neck_height;
-
-  add_neck(neck_h, inner_radius, outer_radius)
-    outer_bayonet(
-      part_to_render=part_to_render,
-      pin_direction=pin_direction,
-      number_of_pins=number_of_pins,
-      path_sweep_angle=path_sweep_angle,
-      turn_direction=turn_direction,
-      inner_radius=inner_radius,
-      outer_radius=outer_radius,
-      pin_radius=pin_radius,
-      allowance=allowance,
-      part_height=part_height,
-      depth=depth
-    );
-}
+add_neck(neck_h, inner_radius, outer_radius)
+  bayonet(
+    part_to_render=part_to_render,
+    pin_direction=pin_direction,
+    number_of_pins=number_of_pins,
+    path_sweep_angle=path_sweep_angle,
+    turn_direction=turn_direction,
+    inner_radius=inner_radius,
+    outer_radius=outer_radius,
+    pin_radius=pin_radius,
+    allowance=allowance,
+    part_height=part_height,
+    depth=depth
+  );
