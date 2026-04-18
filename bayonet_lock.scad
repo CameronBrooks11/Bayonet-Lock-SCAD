@@ -171,6 +171,9 @@ module _bayonet_channel(
               }
             }
             // curved sweep path
+            // Angular correction so the torus cross-section meets the entry shaft tangentially.
+            // Numerator = shaft_radius minus the shaft/torus overlap at the join; overlap differs
+            // by allowance/2 between directions because interface_radius sits on opposite sides of mid.
             sweep_entry_angle =
               (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
               : atan2(shaft_radius - allowance / 4, mid_in_radius + allowance / 2);
@@ -191,9 +194,14 @@ module _bayonet_channel(
           }
 
           // locking notch cutout
+          // Radial position of notch centre: one pin_radius past the channel wall.
+          // "inner" needs an extra -allowance/2 to stay mid-symmetric (interface = mid_out_radius);
+          // "outer" does not (interface = mid_in_radius already sits allowance/2 short of mid).
           lock_pos =
             (pin_direction == "inner") ? interface_radius - pin_radius - allowance / 2
             : interface_radius + pin_radius;
+          // Same atan2 geometry as sweep_entry_angle; places the notch under the pin at end-of-travel.
+          // 1.5*allowance for "outer" is empirically tuned to align with the outer interface offset.
           lock_notch_angle =
             (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, mid_in_radius + allowance / 2)
             : atan2(shaft_radius - 1.5 * allowance, mid_in_radius + allowance / 2);
