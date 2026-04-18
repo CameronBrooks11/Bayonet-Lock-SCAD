@@ -145,19 +145,6 @@ module _bayonet_channel(
   part_height,
   channel_depth
 ) {
-  assert(
-    part_to_render == "pin" || part_to_render == "lock",
-    str("_bayonet_channel: part_to_render must be \"pin\" or \"lock\", got: ", part_to_render)
-  );
-  assert(
-    pin_direction == "inner" || pin_direction == "outer",
-    str("_bayonet_channel: pin_direction must be \"inner\" or \"outer\", got: ", pin_direction)
-  );
-  assert(
-    turn_direction == "CW" || turn_direction == "CCW",
-    str("_bayonet_channel: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
-  );
-
   mid_in_radius = mid_radius - allowance / 2;
   mid_out_radius = mid_in_radius + allowance;
   shaft_radius = pin_radius + allowance / 2;
