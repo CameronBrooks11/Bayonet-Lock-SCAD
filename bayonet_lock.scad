@@ -42,8 +42,13 @@ module bayonet(
     str("bayonet: pin_radius must be > 0, got: ", pin_radius)
   );
   assert(
-    (is_undef(shell_thickness) ? true : (shell_thickness > pin_radius)),
-    str("bayonet: shell_thickness must be > pin_radius, got: ", shell_thickness)
+    (is_undef(shell_thickness) ? true : (pin_radius + allowance / 2 <= shell_thickness)),
+    str(
+      "bayonet: shell_thickness must be >= pin_radius + allowance/2 (",
+      pin_radius + allowance / 2,
+      "), got: ",
+      shell_thickness
+    )
   );
   assert(
     number_of_pins >= 1,

@@ -8,6 +8,16 @@ Versioning is informal - no git tags have been applied yet.
 
 ---
 
+## [0.8.1] - 2026-04-19
+
+### Fixed
+
+- Restored the explicit `shell_thickness` validation in `bayonet` so user-supplied wall thicknesses must satisfy `pin_radius + allowance / 2 <= shell_thickness`, matching the actual `_channel_radius` used for lock-channel geometry.
+- README: corrected the public API documentation to use `interface_radius`, documented `shell_thickness` as optional with its `pin_radius * 2` default, and added the refreshed example list including `inner_3pin_thick_shell.scad`.
+- Cleaned up refreshed examples so their comments match the rendered geometry: `outer_3pin.scad` no longer refers to a removed neck, and `inner_3pin_thick_shell.scad` now describes its 3-pin thick-shell configuration accurately.
+
+---
+
 ## [0.8.0] - 2026-04-19
 
 ### Breaking Changes

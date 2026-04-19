@@ -1,4 +1,4 @@
-// Example: inner pin direction, 2 pins, CCW turn, no neck
+// Example: inner pin direction, 3 pins, CCW turn, explicit thick shell
 // Cameron K. Brooks - MIT License
 
 use <../bayonet_lock.scad>;

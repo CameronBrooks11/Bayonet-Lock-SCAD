@@ -1,4 +1,4 @@
-// Example: outer pin direction, 3 pins, CW turn, neck on pin half
+// Example: outer pin direction, 3 pins, CW turn, default shell thickness
 // Cameron K. Brooks - MIT License
 
 use <../bayonet_lock.scad>;
@@ -13,9 +13,6 @@ sweep_angle = 30;
 turn_direction = "CW";
 part_height = 10;
 entry_depth = 5;
-neck_height = 5;
-
-neck_outer_r = 15;
 
 // Lock - rendered at origin
 bayonet(
@@ -31,7 +28,7 @@ bayonet(
   turn_direction=turn_direction
 );
 
-// Pin with neck - translated right for side-by-side comparison
+// Pin - translated right for side-by-side comparison
 translate([interface_radius * 3, 0, 0])
     bayonet(
       half="pin",
