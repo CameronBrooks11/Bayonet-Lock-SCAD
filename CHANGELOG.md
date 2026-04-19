@@ -6,6 +6,14 @@ Versioning is informal — no git tags have been applied yet.
 
 ---
 
+## [0.7.1] - 2026-04-19
+
+### Changed
+
+- Changed `tube(h, r_outer, r_inner)` to be an internal helper `_tube(h, r_outer, r_inner) ` to signal that it is not intended for public use. This is a minor API change but helps clarify the library's public interface and prevents accidental use of an internal module.
+
+---
+
 ## [0.7.0] - 2026-04-18
 
 ### Added
@@ -39,13 +47,13 @@ Versioning is informal — no git tags have been applied yet.
 
 The `bayonet` module has a new signature. All named arguments must be updated.
 
-| Old parameter | New parameter | Notes |
-|---|---|---|
-| `part_to_render` | `half` | Same values: `"pin"` \| `"lock"` |
-| `outer_radius` | `shell_thickness` | `shell_thickness = (outer_radius - inner_radius) / 2` |
-| `path_sweep_angle` | `sweep_angle` | Identical semantics |
-| `channel_depth` | `entry_depth` | Identical semantics |
-| *(removed)* `mid_in_radius`, `mid_out_radius` | *(internal)* `_interface_r` | These were never intended as public params; now derived inside the module |
+| Old parameter                                 | New parameter               | Notes                                                                     |
+| --------------------------------------------- | --------------------------- | ------------------------------------------------------------------------- |
+| `part_to_render`                              | `half`                      | Same values: `"pin"` \| `"lock"`                                          |
+| `outer_radius`                                | `shell_thickness`           | `shell_thickness = (outer_radius - inner_radius) / 2`                     |
+| `path_sweep_angle`                            | `sweep_angle`               | Identical semantics                                                       |
+| `channel_depth`                               | `entry_depth`               | Identical semantics                                                       |
+| _(removed)_ `mid_in_radius`, `mid_out_radius` | _(internal)_ `_interface_r` | These were never intended as public params; now derived inside the module |
 
 Parameter order has also changed to group geometry first, then count/angle, then mode flags.
 
