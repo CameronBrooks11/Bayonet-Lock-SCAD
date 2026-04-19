@@ -3,21 +3,10 @@
 // MIT License
 // version 0.7.0
 
-// Adds a hollow cylindrical neck/flange below the bayonet body.
-// The bayonet module is passed as a child and positioned at the top of the neck.
-module bayonet_neck(neck_height, inner_radius, outer_radius) {
-  union() {
-    _tube(h=neck_height, r_outer=outer_radius, r_inner=inner_radius);
-    translate([0, 0, neck_height]) {
-      children();
-    }
-  }
-}
-
 module bayonet(
   half,
-  inner_radius,
-  shell_thickness,
+  interface_radius,
+  shell_thickness = undef,
   allowance,
   part_height,
   entry_depth,
@@ -27,7 +16,6 @@ module bayonet(
   pin_direction,
   turn_direction
 ) {
-  shaft_radius = pin_radius + allowance / 2;
 
   assert(
     half == "pin" || half == "lock",
@@ -42,8 +30,8 @@ module bayonet(
     str("bayonet: turn_direction must be \"CW\" or \"CCW\", got: ", turn_direction)
   );
   assert(
-    inner_radius > 0,
-    str("bayonet: inner_radius must be > 0, got: ", inner_radius)
+    interface_radius > 0,
+    str("bayonet: interface_radius must be > 0, got: ", interface_radius)
   );
   assert(
     allowance >= 0,
@@ -54,12 +42,8 @@ module bayonet(
     str("bayonet: pin_radius must be > 0, got: ", pin_radius)
   );
   assert(
-    shell_thickness > 0,
-    str("bayonet: shell_thickness must be > 0, got: ", shell_thickness)
-  );
-  assert(
-    shaft_radius <= shell_thickness,
-    str("bayonet: shaft_radius (pin_radius + allowance/2 = ", shaft_radius, ") must be <= shell_thickness (", shell_thickness, ")")
+    (is_undef(shell_thickness) ? true : (shell_thickness > pin_radius)),
+    str("bayonet: shell_thickness must be > pin_radius, got: ", shell_thickness)
   );
   assert(
     number_of_pins >= 1,
@@ -83,17 +67,20 @@ module bayonet(
   );
 
   // Canonical mating surface and derived geometry.
-  _interface_r = inner_radius + shell_thickness;
-  _outer_radius = inner_radius + 2 * shell_thickness;
+  _shell_thickness = is_undef(shell_thickness) ? pin_radius * 2 : shell_thickness;
+  _outer_radius = interface_radius + _shell_thickness;
+  _internal_radius = interface_radius - _shell_thickness;
   _channel_z = part_height - entry_depth;
 
   // Determine which annular shell carries the pin vs the channel/lock.
   // For pin_direction=="inner": pin on outer shell, channel on inner shell.
   // For pin_direction=="outer": pin on inner shell, channel on outer shell.
-  pin_ext_r = (pin_direction == "inner") ? _outer_radius : _interface_r - allowance / 2;
-  pin_int_r = (pin_direction == "inner") ? _interface_r + allowance / 2 : inner_radius;
-  lock_ext_r = (pin_direction == "inner") ? _interface_r - allowance / 2 : _outer_radius;
-  lock_int_r = (pin_direction == "inner") ? inner_radius : _interface_r + allowance / 2;
+  pin_direction_inner = (pin_direction == "inner");
+  pin_ext_r = pin_direction_inner ? _outer_radius : interface_radius - (allowance / 2);
+  pin_int_r = pin_direction_inner ? interface_radius + (allowance / 2) : _internal_radius;
+
+  lock_ext_r = pin_direction_inner ? interface_radius - (allowance / 2) : _outer_radius;
+  lock_int_r = pin_direction_inner ? _internal_radius : interface_radius + (allowance / 2);
 
   if (half == "pin") {
     _bayonet_channel(
@@ -102,18 +89,26 @@ module bayonet(
       number_of_pins,
       sweep_angle,
       turn_direction,
-      _interface_r,
+      interface_radius,
       pin_radius,
       allowance,
       part_height,
       _channel_z
     );
     // pin-bearing shell body
-    _tube(h=part_height, r_outer=pin_ext_r, r_inner=pin_int_r);
+    _tube(
+      h=part_height,
+      r_outer=pin_ext_r,
+      r_inner=pin_int_r
+    );
   } else if (half == "lock") {
     difference() {
       // channel-bearing shell body
-      _tube(h=part_height, r_outer=lock_ext_r, r_inner=lock_int_r);
+      _tube(
+        h=part_height,
+        r_outer=lock_ext_r,
+        r_inner=lock_int_r
+      );
       // cut out the locking channel
       _bayonet_channel(
         half,
@@ -121,7 +116,7 @@ module bayonet(
         number_of_pins,
         sweep_angle,
         turn_direction,
-        _interface_r,
+        interface_radius,
         pin_radius,
         allowance,
         part_height,
@@ -143,8 +138,10 @@ module _bayonet_channel(
   part_height,
   channel_depth
 ) {
-  shaft_radius = pin_radius + allowance / 2;
-  // Radial position of pin centre: ±allowance/2 from the canonical mating surface.
+
+  _channel_radius = pin_radius + allowance / 2;
+
+  // Radial position of pin centre: +/- allowance/2 from the canonical mating surface.
   pin_interface_r =
     (pin_direction == "outer") ? interface_r - allowance / 2
     : interface_r + allowance / 2;
@@ -157,35 +154,39 @@ module _bayonet_channel(
           union() {
             // vertical entry shaft
             translate([pin_interface_r, 0, channel_depth]) {
-              cylinder(h=part_height - channel_depth + shaft_radius, r=shaft_radius);
+              cylinder(h=part_height - channel_depth + _channel_radius, r=_channel_radius);
             }
             // rounded entry transition
             translate([pin_interface_r, 0, channel_depth]) {
               difference() {
-                sphere(shaft_radius);
-                cylinder(h=shaft_radius * 2, r=shaft_radius * 2);
+                sphere(_channel_radius);
+                cylinder(h=_channel_radius * 2, r=_channel_radius * 2);
               }
             }
             // curved sweep path
             // Angular correction so the torus cross-section meets the entry shaft tangentially.
-            // Inner: numerator = shaft_radius - allowance/2, derived from the pin/torus tangent geometry.
+            // Inner: numerator = _channel_radius - allowance/2, derived from the pin/torus tangent geometry.
             // Outer: coefficient allowance/4 is empirically tuned; the outer-direction interface offset
             // shifts the tangent point differently and a closed-form derivation has not been done.
             // Validated for allowance ∈ [0.1, 0.4] and pin_radius ∈ [0.5, 3.0].
             sweep_entry_angle =
-              (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
-              : atan2(shaft_radius - allowance / 4, interface_r);
-            torus_angle =
-              (turn_direction == "CW") ? -(sweep_angle + sweep_entry_angle)
-              : sweep_angle + sweep_entry_angle;
-            // Pre-rotate only for CW: torus_angle is negative, so rotating by it places
-            // the profile start at torus_angle°; sweeping abs(torus_angle) CCW returns to 0°
-            // (the entry shaft). For CCW no pre-rotation needed — sweep runs 0° to torus_angle°.
+              (pin_direction == "inner") ? atan2(_channel_radius - allowance / 2, interface_r)
+              : atan2(_channel_radius - allowance / 4, interface_r);
+
+            torus_angle = sweep_angle + sweep_entry_angle;
+            torus_angle_signed =
+              (turn_direction == "CW") ?
+                -torus_angle
+              : torus_angle;
+
+            // Pre-rotate only for CW: torus_angle_signed is negative, so rotating by it places
+            // the profile start at torus_angle_signed°; sweeping abs(torus_angle_signed) CCW returns to 0°
+            // (the entry shaft). For CCW no pre-rotation needed - sweep runs 0° to torus_angle_signed°.
             translate([0, 0, channel_depth]) {
-              rotate([0, 0, (turn_direction == "CW") ? torus_angle : 0])
-                rotate_extrude(angle=abs(torus_angle), convexity=10) {
+              rotate([0, 0, (turn_direction == "CW") ? torus_angle_signed : 0])
+                rotate_extrude(angle=abs(torus_angle_signed), convexity=10) {
                   translate([pin_interface_r, 0, 0]) {
-                    circle(r=shaft_radius);
+                    circle(r=_channel_radius);
                   }
                 }
             }
@@ -195,23 +196,31 @@ module _bayonet_channel(
           // Inner: notch at interface_r - pin_radius (symmetric about interface_r).
           // Outer: notch at interface_r - allowance/2 + pin_radius (pin centre sits allowance/2 inside interface_r).
           lock_pos =
-            (pin_direction == "inner") ? interface_r - pin_radius
-            : interface_r - allowance / 2 + pin_radius;
+            (pin_direction == "inner") ?
+              interface_r - pin_radius
+            : interface_r + pin_radius - allowance / 2;
+
           // Same atan2 geometry as sweep_entry_angle; places the notch under the pin at end-of-travel.
           // Inner: same derivation as sweep_entry_angle.
           // Outer: coefficient 1.5*allowance is empirically tuned; same caveat and validated range
           // as sweep_entry_angle outer (allowance ∈ [0.1, 0.4], pin_radius ∈ [0.5, 3.0]).
           lock_notch_angle =
-            (pin_direction == "inner") ? atan2(shaft_radius - allowance / 2, interface_r)
-            : atan2(shaft_radius - 1.5 * allowance, interface_r);
-          lock_angle =
-            (turn_direction == "CW") ? -(sweep_angle - lock_notch_angle)
-            : sweep_angle - lock_notch_angle;
-          x = cos(lock_angle) * lock_pos;
-          y = sin(lock_angle) * lock_pos;
-          z = channel_depth - shaft_radius;
+            (pin_direction == "inner") ?
+              atan2(_channel_radius - allowance / 2, interface_r)
+            : atan2(_channel_radius - 1.5 * allowance, interface_r);
+
+          lock_angle = sweep_angle - lock_notch_angle;
+          lock_angle_signed =
+            (turn_direction == "CW") ?
+              -lock_angle
+            : lock_angle;
+
+          x = cos(lock_angle_signed) * lock_pos;
+          y = sin(lock_angle_signed) * lock_pos;
+          z = channel_depth - _channel_radius;
+
           translate([x, y, z]) {
-            cylinder(h=2 * shaft_radius, r=allowance);
+            cylinder(h=2 * _channel_radius, r=allowance);
           }
         }
       } else if (half == "pin") {

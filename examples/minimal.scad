@@ -1,18 +1,16 @@
-// Example: minimal usage — bare module call, no neck, no derived variables
-// Cameron K. Brooks — MIT License
-// Demonstrates: simplest possible invocation of the bayonet module
+// Example: minimal usage - bare module call, no neck, no derived variables
+// Cameron K. Brooks - MIT License
 
 use <../bayonet_lock.scad>;
 
 $fn = $preview ? 64 : 128;
 
-example_inner_radius = 8;
+example_interface_radius = 8;
 
-// Lock — rendered at origin
+// Lock - rendered at origin
 bayonet(
   half="lock",
-  inner_radius=example_inner_radius,
-  shell_thickness=2,
+  interface_radius=example_interface_radius,
   allowance=0.2,
   part_height=8,
   entry_depth=4,
@@ -23,12 +21,11 @@ bayonet(
   turn_direction="CW"
 );
 
-// Pin — translated right for side-by-side comparison
-translate([example_inner_radius * 3, 0, 0])
+// Pin - translated right for side-by-side comparison
+translate([example_interface_radius * 3, 0, 0])
   bayonet(
     half="pin",
-    inner_radius=example_inner_radius,
-    shell_thickness=2,
+    interface_radius=example_interface_radius,
     allowance=0.2,
     part_height=8,
     entry_depth=4,

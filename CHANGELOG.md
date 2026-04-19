@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Versioning is informal — no git tags have been applied yet.
+Versioning is informal - no git tags have been applied yet.
 
 ---
 
@@ -124,7 +124,7 @@ Parameter order has also changed to group geometry first, then count/angle, then
 
 ### Added
 
-- `assert` guards on `part_to_render`, `pin_direction`, and `turn_direction` in `bayonet` and `_bayonet_channel` — invalid strings now produce a clear error instead of silent empty geometry.
+- `assert` guards on `part_to_render`, `pin_direction`, and `turn_direction` in `bayonet` and `_bayonet_channel` - invalid strings now produce a clear error instead of silent empty geometry.
 
 ### Changed
 

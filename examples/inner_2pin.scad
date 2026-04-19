@@ -1,18 +1,18 @@
-// Example: outer pin direction, 4 pins, CCW turn, larger bore, no neck
+// Example: inner pin direction, 2 pins, CCW turn, no neck
 // Cameron K. Brooks - MIT License
 
 use <../bayonet_lock.scad>;
 
 $fn = $preview ? 64 : 128;
 
-interface_radius = 15;
-pin_radius = 1.75;
-allowance = 0.2;
-number_of_pins = 4;
-sweep_angle = 25;
+interface_radius = 12;
+pin_radius = 1.5;
+allowance = 0.25;
+number_of_pins = 2;
+sweep_angle = 45;
 turn_direction = "CCW";
-part_height = 15;
-entry_depth = 7;
+part_height = 12;
+entry_depth = 6;
 
 // Lock - rendered at origin
 bayonet(
@@ -24,12 +24,12 @@ bayonet(
   number_of_pins=number_of_pins,
   pin_radius=pin_radius,
   sweep_angle=sweep_angle,
-  pin_direction="outer",
+  pin_direction="inner",
   turn_direction=turn_direction
 );
 
-// Pin - translated right for side-by-side comparison
-translate([(interface_radius) * 2 + 5, 0, 0])
+// Pin - translated right for side-by-side comparison (no neck)
+translate([interface_radius * 3, 0, 0])
   bayonet(
     half="pin",
     interface_radius=interface_radius,
@@ -39,6 +39,6 @@ translate([(interface_radius) * 2 + 5, 0, 0])
     number_of_pins=number_of_pins,
     pin_radius=pin_radius,
     sweep_angle=sweep_angle,
-    pin_direction="outer",
+    pin_direction="inner",
     turn_direction=turn_direction
   );
