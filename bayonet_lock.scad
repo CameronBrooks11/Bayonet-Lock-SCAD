@@ -109,7 +109,7 @@ module bayonet(
       r_outer=pin_ext_r,
       r_inner=pin_int_r
     );
-  } else if (half == "lock") {
+  } else {
     difference() {
       // channel-bearing shell body
       _tube(
