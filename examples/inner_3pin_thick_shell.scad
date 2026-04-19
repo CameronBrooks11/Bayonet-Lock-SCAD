@@ -13,7 +13,6 @@ number_of_pins = 3;
 sweep_angle = 45;
 turn_direction = "CCW";
 part_height = 12;
-entry_depth = 6;
 
 // Lock - rendered at origin
 bayonet(
@@ -22,7 +21,6 @@ bayonet(
   shell_thickness=shell_thickness,
   allowance=allowance,
   part_height=part_height,
-  entry_depth=entry_depth,
   number_of_pins=number_of_pins,
   pin_radius=pin_radius,
   sweep_angle=sweep_angle,
@@ -38,7 +36,6 @@ translate([interface_radius * 3, 0, 0])
     shell_thickness=shell_thickness,
     allowance=allowance,
     part_height=part_height,
-    entry_depth=entry_depth,
     number_of_pins=number_of_pins,
     pin_radius=pin_radius,
     sweep_angle=sweep_angle,

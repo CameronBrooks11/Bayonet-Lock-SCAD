@@ -8,6 +8,16 @@ Versioning is informal - no git tags have been applied yet.
 
 ---
 
+## [0.9.0] - 2026-04-19
+
+### Changed
+
+- `entry_depth` is now optional in `bayonet`; when omitted, the lock entry shaft defaults to `part_height * 0.5`.
+- Updated the shipped examples so the default-entry-depth behavior is exercised directly, while `outer_3pin.scad` remains as the explicit override example.
+- README: documented the new `entry_depth` default, updated the usage block to show omission of optional parameters, and refreshed the example descriptions.
+
+---
+
 ## [0.8.1] - 2026-04-19
 
 ### Fixed

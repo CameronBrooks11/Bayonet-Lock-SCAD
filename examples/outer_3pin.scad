@@ -12,7 +12,7 @@ number_of_pins = 3;
 sweep_angle = 30;
 turn_direction = "CW";
 part_height = 10;
-entry_depth = 5;
+entry_depth = 7; // override default entry depth of part_height * 0.5
 
 // Lock - rendered at origin
 bayonet(

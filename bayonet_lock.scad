@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.7.0
+// version 0.9.0
 
 module bayonet(
   half,
@@ -9,13 +9,16 @@ module bayonet(
   shell_thickness = undef,
   allowance,
   part_height,
-  entry_depth,
+  entry_depth = undef,
   number_of_pins,
   pin_radius,
   sweep_angle,
   pin_direction,
   turn_direction
 ) {
+
+  // Default the entry shaft to half the part height unless the caller overrides it.
+  _entry_depth = is_undef(entry_depth) ? part_height * 0.5 : entry_depth;
 
   assert(
     half == "pin" || half == "lock",
@@ -55,12 +58,12 @@ module bayonet(
     str("bayonet: number_of_pins must be >= 1, got: ", number_of_pins)
   );
   assert(
-    entry_depth > 0,
-    str("bayonet: entry_depth must be > 0, got: ", entry_depth)
+    _entry_depth > 0,
+    str("bayonet: entry_depth must be > 0, got: ", _entry_depth)
   );
   assert(
-    entry_depth < part_height,
-    str("bayonet: entry_depth (", entry_depth, ") must be < part_height (", part_height, ")")
+    _entry_depth < part_height,
+    str("bayonet: entry_depth (", _entry_depth, ") must be < part_height (", part_height, ")")
   );
   assert(
     sweep_angle > 0,
@@ -75,7 +78,7 @@ module bayonet(
   _shell_thickness = is_undef(shell_thickness) ? pin_radius * 2 : shell_thickness;
   _outer_radius = interface_radius + _shell_thickness;
   _internal_radius = interface_radius - _shell_thickness;
-  _channel_z = part_height - entry_depth;
+  _channel_z = part_height - _entry_depth;
 
   // Determine which annular shell carries the pin vs the channel/lock.
   // For pin_direction=="inner": pin on outer shell, channel on inner shell.
