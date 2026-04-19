@@ -1,8 +1,28 @@
 # Changelog
 
+<!-- markdownlint-disable MD024 -->
+
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning is informal - no git tags have been applied yet.
+
+---
+
+## [0.8.0] - 2026-04-19
+
+### Breaking Changes
+
+- `bayonet` now uses `interface_radius` as its primary radial input. Existing callers that pass `inner_radius` must be updated.
+- `shell_thickness` is now optional. When omitted, it defaults to `pin_radius * 2`, which changes the generated shell radii relative to earlier releases that required an explicit wall thickness.
+- Removed the public `bayonet_neck` helper from the library and from the documented examples.
+
+### Changed
+
+- Reworked the derived shell geometry around a single canonical `interface_radius`, with `_outer_radius` and `_internal_radius` now computed from that interface and the effective shell thickness.
+- Simplified the pin-side and lock-side annulus derivation by computing the four shell radii directly from `pin_direction`.
+- `_bayonet_channel` now uses a dedicated `_channel_radius` helper and shared signed-angle variables for the torus sweep and locking-notch placement.
+- Refreshed the examples for the new API: renamed the baseline examples to `outer_3pin.scad` and `inner_2pin.scad`, kept `outer_4pin_ccw.scad` and `minimal.scad`, and added `inner_3pin_thick_shell.scad` to show an explicit thicker wall.
+- README examples were revised to focus on the core `bayonet(...)` call without the removed neck helper.
 
 ---
 
@@ -10,7 +30,7 @@ Versioning is informal - no git tags have been applied yet.
 
 ### Changed
 
-- Changed `tube(h, r_outer, r_inner)` to be an internal helper `_tube(h, r_outer, r_inner) ` to signal that it is not intended for public use. This is a minor API change but helps clarify the library's public interface and prevents accidental use of an internal module.
+- Changed `tube(h, r_outer, r_inner)` to be an internal helper `_tube(h, r_outer, r_inner)` to signal that it is not intended for public use. This is a minor API change but helps clarify the library's public interface and prevents accidental use of an internal module.
 
 ---
 
