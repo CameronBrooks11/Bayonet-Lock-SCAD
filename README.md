@@ -35,6 +35,28 @@ bayonet(
 );
 ```
 
+## Mating the two halves
+
+Both halves are authored in a single frame. Instantiated at a common origin with matching
+parameters they are **in the locked position** — no translation or rotation needed:
+
+```scad
+bayonet(half = "lock", ...);
+bayonet(half = "pin",  ...);   // same origin, same parameters => locked
+```
+
+To show them at the entry position instead — pins at the channel mouths, before the turn —
+rotate the pin half by `sweep_angle`, negative for `"CW"` and positive for `"CCW"`:
+
+```scad
+rotate([0, 0, turn_direction == "CW" ? -sweep_angle : sweep_angle])
+  bayonet(half = "pin", ...);
+```
+
+Any rotation between the two is a valid mid-travel position. All of this holds for any
+`entry_depth`, and throughout that range the halves stay clear of each other, so an
+`intersection()` of the two that is non-empty means the parameters do not match.
+
 See the [`examples/`](examples/) directory for ready-to-render configurations:
 
 | File                                                                  | What it shows                              |

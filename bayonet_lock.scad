@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.9.0
+// version 0.9.1
 
 module bayonet(
   half,
@@ -232,8 +232,11 @@ module _bayonet_channel(
           }
         }
       } else if (half == "pin") {
-        // locking pin sphere
-        translate([pin_interface_r, 0, part_height - channel_depth]) {
+        // Locking pin sphere, at the same height as the lock's channel end so that the two
+        // halves are authored in one frame: placed at a common origin they are locked
+        // together. Measuring from the pin's own base instead would only line up when
+        // entry_depth happens to equal part_height / 2.
+        translate([pin_interface_r, 0, channel_depth]) {
           sphere(pin_radius);
         }
       }

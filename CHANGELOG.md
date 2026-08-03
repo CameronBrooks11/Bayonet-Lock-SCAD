@@ -8,6 +8,15 @@ Versioning is informal - no git tags have been applied yet.
 
 ---
 
+## [0.9.1] - 2026-08-03
+
+### Fixed
+
+- The pin half's locking sphere is now placed at the lock's channel end rather than measured up from the pin's own base, so both halves are authored in one frame: instantiated at a common origin they are in the locked position. Previously the two only lined up when `entry_depth` equalled `part_height / 2`. Since that is the default the common case was unaffected, but callers who set `entry_depth` explicitly got a pin sitting at the wrong height in the channel, with no warning. At the default `entry_depth` the generated geometry is byte-for-byte unchanged.
+- README: documented the mating convention, including how to place the halves at the entry position and the locked position.
+
+---
+
 ## [0.9.0] - 2026-04-19
 
 ### Changed
