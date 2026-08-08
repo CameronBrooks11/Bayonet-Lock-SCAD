@@ -107,8 +107,13 @@ module bayonet(
   lock_ext_r = pin_direction_inner ? interface_radius - (allowance / 2) : _outer_radius;
   lock_int_r = pin_direction_inner ? _internal_radius : interface_radius + (allowance / 2);
 
+  // A shell_only part exported as a mesh would silently ship a coupling that cannot lock.
+  if (_shell_only && !$preview)
+    echo("WARNING: bayonet: shell_only active in a render - the emitted part has no locking features");
+
   if (_shell_only) {
-    // Bare coupling shell: same envelope and shell radii as the real part, no features.
+    // Bare coupling shell: same shell radii and height as the real part. The pin bosses are
+    // features, so a pin half previews pin_radius smaller in radius than it prints.
     _tube(
       h=part_height,
       r_outer=(half == "pin") ? pin_ext_r : lock_ext_r,

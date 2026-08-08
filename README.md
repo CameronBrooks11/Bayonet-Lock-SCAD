@@ -41,8 +41,13 @@ bayonet(
 
 The locking channel is a boolean-heavy cut, so an assembly holding several bayonets becomes
 slow to pan long before it becomes slow to render. `shell_only` drops the pin and channel
-features and emits just the bare coupling shell — same envelope, same shell radii, no
-locking geometry.
+features and emits just the bare coupling shell — same shell radii, same height, no locking
+geometry.
+
+The pin bosses are features, so they go too: a pin half previews `pin_radius` smaller in
+radius than it prints. Preview the couplings this way to see where they sit, not to judge
+clearance against whatever sits next to them. Rendering with `shell_only` still active echoes
+a warning, since the emitted part would have nothing to lock with.
 
 Because assemblies are previewed and only parts are rendered, the natural wiring is
 `$preview`. `shell_only` falls back to the dynamically scoped `$bayonet_shell_only` special

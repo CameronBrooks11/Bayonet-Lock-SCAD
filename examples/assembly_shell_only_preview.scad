@@ -5,7 +5,7 @@
 // gets slow to pan long before it gets slow to render. Setting the dynamically scoped
 // $bayonet_shell_only special variable once, at the top of the assembly, drops the
 // pin/channel features from every bayonet() call below it - including calls buried
-// inside your own modules - while leaving the coupling envelope intact.
+// inside your own modules - while leaving the coupling shells where they are.
 //
 // Wiring it to $preview gives the usual OpenSCAD workflow: F5 previews the assembly as
 // bare shells, F6 renders the real geometry. Nothing else in the file changes.
