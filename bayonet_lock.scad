@@ -1,7 +1,7 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.9.1
+// version 0.10.0
 
 module bayonet(
   half,
@@ -14,11 +14,24 @@ module bayonet(
   pin_radius,
   sweep_angle,
   pin_direction,
-  turn_direction
+  turn_direction,
+  shell_only = undef
 ) {
 
   // Default the entry shaft to half the part height unless the caller overrides it.
   _entry_depth = is_undef(entry_depth) ? part_height * 0.5 : entry_depth;
+
+  // Drop the pin/channel features and emit only the bare shell. Intended for previewing
+  // assemblies, where the channel booleans dominate the cost but the coupling envelope is
+  // all you need to see; the final render restores the real geometry.
+  // Resolution order: explicit argument, then the dynamically scoped $bayonet_shell_only,
+  // then false. The special variable lets an assembly opt in once at its top level
+  // ($bayonet_shell_only = $preview;) rather than threading an argument through every
+  // intermediate module. Deliberately not given a file-scope default here: a top-level
+  // assignment in a use'd library shadows the consumer's value, so the fallback is is_undef.
+  _shell_only = is_undef(shell_only)
+    ? (is_undef($bayonet_shell_only) ? false : $bayonet_shell_only)
+    : shell_only;
 
   assert(
     half == "pin" || half == "lock",
@@ -73,6 +86,10 @@ module bayonet(
     sweep_angle < 360 / number_of_pins,
     str("bayonet: sweep_angle (", sweep_angle, ") must be < 360/number_of_pins (", 360 / number_of_pins, ") to avoid channel overlap")
   );
+  assert(
+    is_bool(_shell_only),
+    str("bayonet: shell_only must be true or false, got: ", _shell_only)
+  );
 
   // Canonical mating surface and derived geometry.
   _shell_thickness = is_undef(shell_thickness) ? pin_radius * 2 : shell_thickness;
@@ -90,7 +107,14 @@ module bayonet(
   lock_ext_r = pin_direction_inner ? interface_radius - (allowance / 2) : _outer_radius;
   lock_int_r = pin_direction_inner ? _internal_radius : interface_radius + (allowance / 2);
 
-  if (half == "pin") {
+  if (_shell_only) {
+    // Bare coupling shell: same envelope and shell radii as the real part, no features.
+    _tube(
+      h=part_height,
+      r_outer=(half == "pin") ? pin_ext_r : lock_ext_r,
+      r_inner=(half == "pin") ? pin_int_r : lock_int_r
+    );
+  } else if (half == "pin") {
     _bayonet_channel(
       half,
       pin_direction,

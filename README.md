@@ -12,6 +12,7 @@ Key features:
 - `pin_direction` parameter selects whether the pin protrudes inward or outward.
 - Adjustable `allowance` (clearance gap) for tuning fit tolerance.
 - Preview-aware `$fn` (64 preview / 128 render) for fast iteration.
+- Optional `shell_only` mode that drops the locking features for fast assembly previews.
 
 The design improves upon earlier versions by modularizing the code and addressing issues from the original implementation. Contributions and feedback are welcome.
 
@@ -31,9 +32,50 @@ bayonet(
   pin_radius      = 1,
   sweep_angle     = 30,       // degrees; must be < 360/number_of_pins
   pin_direction   = "outer",  // "inner" | "outer"
-  turn_direction  = "CW"      // "CW" | "CCW"
+  turn_direction  = "CW",     // "CW" | "CCW"
+  // shell_only   = false     // optional; omit the locking features, see below
 );
 ```
+
+## Fast assembly previews (`shell_only`)
+
+The locking channel is a boolean-heavy cut, so an assembly holding several bayonets becomes
+slow to pan long before it becomes slow to render. `shell_only` drops the pin and channel
+features and emits just the bare coupling shell — same envelope, same shell radii, no
+locking geometry.
+
+Because assemblies are previewed and only parts are rendered, the natural wiring is
+`$preview`. `shell_only` falls back to the dynamically scoped `$bayonet_shell_only` special
+variable, so an assembly opts in **once** at its top level rather than threading an argument
+through every intermediate module:
+
+```scad
+$bayonet_shell_only = $preview;   // F5 previews bare shells, F6 renders the real geometry
+```
+
+That reaches every `bayonet()` call below it, including calls buried inside your own modules.
+An explicit `shell_only=` argument always wins over the special variable, so a single joint
+can stay fully detailed while the rest of the assembly stays light, and `let()` scopes it to
+part of a tree:
+
+```scad
+let($bayonet_shell_only = true) my_subassembly();
+```
+
+Validation is unaffected: every parameter is checked in `shell_only` mode too, so a preview
+that passes will not surprise you with an assertion at render time.
+
+> **Note for forks:** setting `$bayonet_shell_only` in *your own* file is the intended usage
+> above. What does not work is declaring a default at the top level of `bayonet_lock.scad`
+> itself — a top-level assignment in a `use`d file shadows the consumer's value, silently
+> pinning it to the library's default. The library resolves it with `is_undef` for that
+> reason.
+
+The saving scales with the number of joints. In
+[`examples/assembly_shell_only_preview.scad`](examples/assembly_shell_only_preview.scad)
+the mode cuts the CSG tree from 752 nodes to 240, and removes every `rotate_extrude` and
+channel cut except those of the one joint that opts out. On a comparable eight-half assembly
+at `$fn = 64`, the CGAL render drops from ~104 s to ~3.8 s.
 
 ## Mating the two halves
 
@@ -66,8 +108,10 @@ See the [`examples/`](examples/) directory for ready-to-render configurations:
 | [`inner_3pin_thick_shell.scad`](examples/inner_3pin_thick_shell.scad) | Inner pin, 3 pins, explicit thick shell    |
 | [`outer_4pin_ccw.scad`](examples/outer_4pin_ccw.scad)                 | Outer pin, 4 pins, CCW, default entry depth |
 | [`minimal.scad`](examples/minimal.scad)                               | Bare minimum call, default shell and entry depth |
+| [`assembly_shell_only_preview.scad`](examples/assembly_shell_only_preview.scad) | Multi-joint assembly using `$bayonet_shell_only = $preview` |
 
-Each file renders both the lock and pin side-by-side for visual inspection.
+The first five render the lock and pin side-by-side for visual inspection;
+`assembly_shell_only_preview.scad` instead shows them assembled into a multi-joint model.
 
 ## Parameter reference
 
@@ -84,6 +128,7 @@ Each file renders both the lock and pin side-by-side for visual inspection.
 | `sweep_angle`      | degrees                | Arc the pin travels; must be > 0 and < 360/number_of_pins                                                                     |
 | `pin_direction`    | `"inner"` \| `"outer"` | Whether the pin protrudes toward the bore or toward the OD                                                                    |
 | `turn_direction`   | `"CW"` \| `"CCW"`      | Direction of the locking rotation                                                                                             |
+| `shell_only`       | bool, optional         | Omit the pin/channel features and emit only the bare shell; defaults to `$bayonet_shell_only`, then `false`                    |
 
 ## License & Attribution
 

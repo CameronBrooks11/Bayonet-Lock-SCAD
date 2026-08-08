@@ -8,6 +8,24 @@ Versioning is informal - no git tags have been applied yet.
 
 ---
 
+## [0.10.0] - 2026-08-08
+
+### Added
+
+- `shell_only` parameter on `bayonet`. When true, the pin and channel features are omitted and only the bare coupling shell is emitted, with the same envelope and shell radii as the real part. Intended for previewing composite assemblies, where the channel booleans dominate the cost but only the coupling envelope needs to be visible.
+- `shell_only` falls back to the dynamically scoped `$bayonet_shell_only` special variable, then to `false`. This lets an assembly opt in once at its top level (`$bayonet_shell_only = $preview;`) instead of threading an argument through every intermediate module, and it reaches `bayonet()` calls buried inside consumer modules. An explicit `shell_only=` argument always wins over the special variable, and `let($bayonet_shell_only = ...)` scopes it to part of a tree. The library deliberately does not declare a file-scope default for the special variable, because a top-level assignment in a `use`d file shadows the consumer's value; the fallback uses `is_undef` instead.
+- `examples/assembly_shell_only_preview.scad`, a four-coupling assembly wired to `$preview`, also showing a per-call override that keeps one joint fully detailed. The mode cuts that example's CSG tree from 752 nodes to 240; on a comparable eight-half assembly at `$fn = 64` the CGAL render drops from ~104 s to ~3.8 s.
+
+### Changed
+
+- All parameter validation still runs in `shell_only` mode, so a preview and a render validate identically and a passing preview cannot surprise the caller with an assertion at render time.
+
+### Notes
+
+- Default behavior is unchanged: with `shell_only` omitted and `$bayonet_shell_only` unset, the generated solid is geometrically identical to 0.9.1 (verified as an identical facet multiset). The emitted STL is no longer byte-for-byte identical, because the added branch introduces one inert `group()` node per call and CGAL's facet emission order follows the tree shape. No shipped example was modified.
+
+---
+
 ## [0.9.1] - 2026-08-03
 
 ### Fixed
