@@ -8,6 +8,29 @@ Versioning is informal - no git tags have been applied yet.
 
 ---
 
+## [0.11.0] - 2026-08-11
+
+### Added
+
+- `pin_angles` parameter on `bayonet`, placing the locking pins at explicit angles instead of spacing them evenly. Evenly spaced pins carry that spacing's rotational symmetry, so an n-pin coupling has n indistinguishable locked positions; nothing in the geometry prefers one. That is harmless while both halves are axisymmetric and wrong as soon as one carries an orientation — a baffle, a tilted sensor, a keyed connector seated one position out locks correctly and points somewhere else, with no resistance to tell the assembler. Any unequal spacing removes the symmetry, which is how a BA15d lamp cap keys its two pins.
+- `bayonet_keyed_pin_angles(number_of_pins, key_angle)`, returning even spacing with the second pin brought back by `key_angle` — the least disturbance that leaves no rotational symmetry.
+- `bayonet_pin_pattern_order(angles)` and `bayonet_pin_pattern_is_keyed(angles)`, reporting how many ways a pattern can be seated. Consumers that hang something orientation-bearing off a coupling can assert on these rather than trusting the pin count.
+- `bayonet_pin_pattern_margin(angles)`, the angle by which the worst-placed pin misses a channel mouth at the easiest wrong seating, and `bayonet_channel_half_angle(interface_radius, pin_radius, allowance)`, the mouth's half-width. Being keyed only says a wrong seating is not identical; it is only *blocked* when the margin exceeds the half-width, and a key below it still reads as keyed while letting a wrong attempt start to go in. The two are separate functions so this stays the caller's check rather than a hidden assert.
+- `bayonet_pin_pattern_min_gap(angles)`, the ceiling on `sweep_angle`.
+- `examples/keyed_3pin.scad`, showing a keyed coupling locked, the blocked seating drawn as an intersection beside it, and the margin asserted against the mouth half-width.
+
+### Changed
+
+- `number_of_pins` is now optional. Give exactly one of `number_of_pins` or `pin_angles`; supplying both or neither asserts.
+- The channel-overlap check generalises from `sweep_angle < 360 / number_of_pins` to `sweep_angle < bayonet_pin_pattern_min_gap(...)`. For evenly spaced pins the smallest gap *is* `360/n`, so the rule is unchanged in the existing case.
+
+### Notes
+
+- Default behavior is unchanged: with `pin_angles` omitted, all five side-by-side examples render an identical facet multiset to 0.10.0 (`outer_3pin` 43276, `inner_2pin` 29112, `inner_3pin_thick_shell` 42926, `minimal` 28432, `outer_4pin_ccw` 57632). No shipped example was modified.
+- `pin_angles` is appended after `shell_only` in the signature rather than placed beside `number_of_pins`, so positional callers are unaffected. The parameter table lists it next to `number_of_pins`, where it reads.
+
+---
+
 ## [0.10.0] - 2026-08-08
 
 ### Added
