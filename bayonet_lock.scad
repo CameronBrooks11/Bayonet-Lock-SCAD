@@ -1,7 +1,73 @@
 // simple bayonet cylindrical locking mechanism
 // Cameron K. Brooks
 // MIT License
-// version 0.10.0
+// version 0.11.0
+
+// ----- pin pattern -----
+// Evenly spaced pins give the coupling that spacing's rotational symmetry, so an n-pin
+// coupling has n indistinguishable locked positions. That is fine when the halves carry
+// nothing with an orientation, and wrong the moment one does - a keyed part seated one
+// position out mates just as happily and points somewhere else. An explicit pin_angles list
+// breaks the symmetry, the way a BA15d lamp cap offsets its two pins.
+
+// Smallest absolute angle between two directions, in [0, 180].
+function _bayonet_sep(a, b) = let (d = abs( (a - b) % 360 )) min(d, 360 - d);
+
+// Is x one of the angles, to within eps?
+function _bayonet_has(angles, x, eps) = len([for (a = angles) if (_bayonet_sep(a, x) < eps) 1]) > 0;
+
+// Does rotating every pin by r reproduce the set?
+function _bayonet_maps(angles, r, eps) =
+  len([for (a = angles) if (_bayonet_has(angles, a + r, eps)) 1]) == len(angles);
+
+/**
+ * Smallest gap between adjacent pins, in degrees. The sweep has to fit inside this or
+ * neighbouring channels run into each other.
+ */
+function bayonet_pin_pattern_min_gap(angles) =
+  len(angles) < 2 ? 360
+  : min([
+      for (a = angles) min([for (b = angles) if (_bayonet_sep(a, b) > 1e-6) let (d = (b - a) % 360) d < 0 ? d + 360 : d]),
+  ]);
+
+/**
+ * How many distinct rotations map the pin set onto itself. Evenly spaced pins give the pin
+ * count; 1 means the coupling can only be seated one way.
+ */
+function bayonet_pin_pattern_order(angles, eps = 1e-6) =
+  len([for (a = angles) if (_bayonet_maps(angles, a - angles[0], eps)) 1]);
+
+/**
+ * True when the pattern admits a single locked orientation. Ask this before hanging anything
+ * with an orientation - a baffle, a tilted probe, a keyed connector - off a bayonet half.
+ */
+function bayonet_pin_pattern_is_keyed(angles) = bayonet_pin_pattern_order(angles) == 1;
+
+/**
+ * How far the worst-placed pin misses a channel mouth at the easiest wrong seating, in
+ * degrees. Being keyed only says a wrong seating is not identical; this says whether it is
+ * physically blocked, so compare it against bayonet_channel_half_angle().
+ */
+function bayonet_pin_pattern_margin(angles) =
+  len(angles) < 2 ? 360
+  : min([
+      for (a = angles) if (_bayonet_sep(a, angles[0]) > 1e-6) let (r = a - angles[0])
+          max([for (b = angles) min([for (c = angles) _bayonet_sep(b + r, c)])]),
+  ]);
+
+/**
+ * Angular half-width of the entry shaft: how far a pin can sit from a mouth and still find it.
+ */
+function bayonet_channel_half_angle(interface_radius, pin_radius, allowance) =
+  atan2(pin_radius + allowance / 2, interface_radius);
+
+/**
+ * Evenly spaced pins with the second one brought back by key_angle - the least disturbance
+ * that leaves the pattern with no rotational symmetry. key_angle must clear
+ * bayonet_channel_half_angle() for a wrong seating to actually be blocked.
+ */
+function bayonet_keyed_pin_angles(number_of_pins, key_angle) =
+  [for (i = [0:number_of_pins - 1]) 360 / number_of_pins * i - (i == 1 ? key_angle : 0)];
 
 module bayonet(
   half,
@@ -10,12 +76,13 @@ module bayonet(
   allowance,
   part_height,
   entry_depth = undef,
-  number_of_pins,
+  number_of_pins = undef,
   pin_radius,
   sweep_angle,
   pin_direction,
   turn_direction,
-  shell_only = undef
+  shell_only = undef,
+  pin_angles = undef
 ) {
 
   // Default the entry shaft to half the part height unless the caller overrides it.
@@ -32,6 +99,25 @@ module bayonet(
   _shell_only = is_undef(shell_only)
     ? (is_undef($bayonet_shell_only) ? false : $bayonet_shell_only)
     : shell_only;
+
+  // Where the pins sit around the circle. number_of_pins spaces them evenly; pin_angles gives
+  // the positions outright, which is how a coupling is keyed to one locked orientation.
+  _pin_angles = is_undef(pin_angles)
+    ? [for (i = [0:number_of_pins - 1]) 360 / number_of_pins * i]
+    : pin_angles;
+
+  assert(
+    is_undef(number_of_pins) != is_undef(pin_angles),
+    "bayonet: give exactly one of number_of_pins or pin_angles"
+  );
+  assert(
+    is_undef(pin_angles) || (is_list(pin_angles) && len(pin_angles) >= 1),
+    str("bayonet: pin_angles must be a non-empty list of angles, got: ", pin_angles)
+  );
+  assert(
+    is_undef(pin_angles) || len([for (a = pin_angles) if (!is_num(a)) 1]) == 0,
+    str("bayonet: pin_angles must all be numbers, got: ", pin_angles)
+  );
 
   assert(
     half == "pin" || half == "lock",
@@ -67,7 +153,7 @@ module bayonet(
     )
   );
   assert(
-    number_of_pins >= 1,
+    is_undef(number_of_pins) || number_of_pins >= 1,
     str("bayonet: number_of_pins must be >= 1, got: ", number_of_pins)
   );
   assert(
@@ -82,9 +168,14 @@ module bayonet(
     sweep_angle > 0,
     str("bayonet: sweep_angle must be > 0, got: ", sweep_angle)
   );
+  // Generalises the old sweep < 360/number_of_pins: with the pins spaced evenly that gap is
+  // 360/n, and with them keyed it is whichever pair sits closest.
   assert(
-    sweep_angle < 360 / number_of_pins,
-    str("bayonet: sweep_angle (", sweep_angle, ") must be < 360/number_of_pins (", 360 / number_of_pins, ") to avoid channel overlap")
+    sweep_angle < bayonet_pin_pattern_min_gap(_pin_angles),
+    str(
+      "bayonet: sweep_angle (", sweep_angle, ") must be < the smallest gap between pins (",
+      bayonet_pin_pattern_min_gap(_pin_angles), ") to avoid channel overlap"
+    )
   );
   assert(
     is_bool(_shell_only),
@@ -123,7 +214,7 @@ module bayonet(
     _bayonet_channel(
       half,
       pin_direction,
-      number_of_pins,
+      _pin_angles,
       sweep_angle,
       turn_direction,
       interface_radius,
@@ -150,7 +241,7 @@ module bayonet(
       _bayonet_channel(
         half,
         pin_direction,
-        number_of_pins,
+        _pin_angles,
         sweep_angle,
         turn_direction,
         interface_radius,
@@ -166,7 +257,7 @@ module bayonet(
 module _bayonet_channel(
   half,
   pin_direction,
-  number_of_pins,
+  pin_angles,
   sweep_angle,
   turn_direction,
   interface_r,
@@ -183,8 +274,7 @@ module _bayonet_channel(
     (pin_direction == "outer") ? interface_r - allowance / 2
     : interface_r + allowance / 2;
 
-  for (runs = [0:number_of_pins - 1]) {
-    angle = 360 / number_of_pins * runs;
+  for (angle = pin_angles) {
     rotate([0, 0, angle]) {
       if (half == "lock") {
         difference() {

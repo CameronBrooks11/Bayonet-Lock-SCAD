@@ -6,7 +6,8 @@ This OpenSCAD library provides a parametric bayonet lock connector, inspired by 
 
 Key features:
 
-- Configurable number of locking pins (2 or more).
+- Configurable number of locking pins (2 or more), evenly spaced or at explicit `pin_angles`.
+- Optional keying: an uneven pin pattern gives the coupling a single locked orientation.
 - Configurable interface radius (`interface_radius`) with optional shell wall thickness (`shell_thickness`) for any coupling diameter.
 - Optional `entry_depth`; when omitted it defaults to `part_height * 0.5`.
 - `pin_direction` parameter selects whether the pin protrudes inward or outward.
@@ -28,14 +29,56 @@ bayonet(
   allowance       = 0.2,
   part_height     = 10,
   // entry_depth  = 5,        // optional; defaults to part_height * 0.5
-  number_of_pins  = 3,
+  number_of_pins  = 3,        // or pin_angles = [...], see keying below
   pin_radius      = 1,
-  sweep_angle     = 30,       // degrees; must be < 360/number_of_pins
+  sweep_angle     = 30,       // degrees; must be < the smallest gap between pins
   pin_direction   = "outer",  // "inner" | "outer"
   turn_direction  = "CW",     // "CW" | "CCW"
   // shell_only   = false     // optional; omit the locking features, see below
 );
 ```
+
+## Keying the locked orientation (`pin_angles`)
+
+Evenly spaced pins carry that spacing's rotational symmetry, so an n-pin coupling has **n
+indistinguishable locked positions**. Nothing in the geometry prefers one: a 3-pin half mates
+just as happily at 0°, 120° and 240°.
+
+That is harmless while both halves are axisymmetric, and wrong the moment one of them carries
+an orientation — a baffle, a tilted sensor, a keyed connector. Such a part seated one position
+out locks correctly and points somewhere else, with no resistance to tell the assembler.
+
+`pin_angles` places the pins outright instead of spacing them evenly. Any unequal spacing
+removes the symmetry, which is how a BA15d lamp cap keys its two pins:
+
+```scad
+pin_angles = bayonet_keyed_pin_angles(3, 25);   // [0, 95, 240] - evenly spaced, one pin back 25°
+
+bayonet(half = "lock", pin_angles = pin_angles, ...);
+```
+
+Give exactly one of `number_of_pins` or `pin_angles`. `sweep_angle` must fit the smallest gap
+in the pattern, which for even spacing is the familiar `360/number_of_pins`.
+
+**Being keyed is not the same as being blocked.** Symmetry only says a wrong seating is not
+*identical*; whether it is *prevented* depends on how far the offset throws the pins clear of
+the channel mouths. Check the margin against the mouth's half-width:
+
+```scad
+assert(bayonet_pin_pattern_margin(pin_angles)
+       > bayonet_channel_half_angle(interface_radius, pin_radius, allowance));
+```
+
+A key smaller than that still reads as keyed and still lets a wrong attempt start to go in.
+
+| Function                                                          | Returns                                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `bayonet_keyed_pin_angles(number_of_pins, key_angle)`             | Even spacing with the second pin brought back by `key_angle`             |
+| `bayonet_pin_pattern_order(angles)`                               | Rotational symmetry order; `1` is keyed, even spacing gives the pin count |
+| `bayonet_pin_pattern_is_keyed(angles)`                            | `order == 1`                                                             |
+| `bayonet_pin_pattern_margin(angles)`                              | Degrees by which the worst pin misses a mouth at the easiest wrong seating |
+| `bayonet_pin_pattern_min_gap(angles)`                             | Smallest gap between adjacent pins; the ceiling on `sweep_angle`         |
+| `bayonet_channel_half_angle(interface_radius, pin_radius, allowance)` | Angular half-width of the entry shaft                                |
 
 ## Fast assembly previews (`shell_only`)
 
@@ -113,10 +156,13 @@ See the [`examples/`](examples/) directory for ready-to-render configurations:
 | [`inner_3pin_thick_shell.scad`](examples/inner_3pin_thick_shell.scad) | Inner pin, 3 pins, explicit thick shell    |
 | [`outer_4pin_ccw.scad`](examples/outer_4pin_ccw.scad)                 | Outer pin, 4 pins, CCW, default entry depth |
 | [`minimal.scad`](examples/minimal.scad)                               | Bare minimum call, default shell and entry depth |
+| [`keyed_3pin.scad`](examples/keyed_3pin.scad)                         | Keyed 3 pins, one locked orientation, with the blocked seating shown |
 | [`assembly_shell_only_preview.scad`](examples/assembly_shell_only_preview.scad) | Multi-joint assembly using `$bayonet_shell_only = $preview` |
 
-The first five render the lock and pin side-by-side for visual inspection;
-`assembly_shell_only_preview.scad` instead shows them assembled into a multi-joint model.
+The first five render the lock and pin side-by-side for visual inspection. `keyed_3pin.scad`
+shows the halves locked and, beside them, the intersection at a wrong seating that a keyed
+pattern refuses; `assembly_shell_only_preview.scad` shows them assembled into a multi-joint
+model.
 
 ## Parameter reference
 
@@ -128,9 +174,10 @@ The first five render the lock and pin side-by-side for visual inspection;
 | `allowance`        | mm ≥ 0                 | Radial clearance applied ±allowance/2 around the mating surface                                                               |
 | `part_height`      | mm                     | Total axial height of the connector                                                                                           |
 | `entry_depth`      | mm, optional           | Insertion depth from the top face before the bayonet turn begins; defaults to `part_height * 0.5` and must be < `part_height` |
-| `number_of_pins`   | int ≥ 1                | Number of locking points                                                                                                      |
+| `number_of_pins`   | int ≥ 1, optional      | Number of locking points, spaced evenly; give this or `pin_angles`, not both                                                  |
+| `pin_angles`       | list of degrees, optional | Explicit pin positions, replacing even spacing; an unequal pattern keys the coupling to one locked orientation             |
 | `pin_radius`       | mm                     | Radius of the locking pin sphere; explicit `shell_thickness` values must satisfy `pin_radius + allowance/2 ≤ shell_thickness` |
-| `sweep_angle`      | degrees                | Arc the pin travels; must be > 0 and < 360/number_of_pins                                                                     |
+| `sweep_angle`      | degrees                | Arc the pin travels; must be > 0 and < the smallest gap between pins (`360/number_of_pins` when evenly spaced)                |
 | `pin_direction`    | `"inner"` \| `"outer"` | Whether the pin protrudes toward the bore or toward the OD                                                                    |
 | `turn_direction`   | `"CW"` \| `"CCW"`      | Direction of the locking rotation                                                                                             |
 | `shell_only`       | bool, optional         | Omit the pin/channel features and emit only the bare shell; defaults to `$bayonet_shell_only`, then `false`                    |
